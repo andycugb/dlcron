@@ -13,8 +13,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by jbcheng on 2016-03-17.
@@ -30,14 +28,11 @@ public class ZooKeeperLock implements Watcher {
     private boolean isUseDB;
     private CronTask cronTask;
     private final Object lock = new Object();
-    private AtomicBoolean dataNodeNotify = new AtomicBoolean(false);
-    private ConcurrentHashMap<String, Boolean> lockNotify =
-            new ConcurrentHashMap<String, Boolean>();
 
     private final String doing = "doing";
     private final String done = "done";
     private final String logPrefix = "Job[" + this.jobName + "][" + this.callType + "]["
-            + DateUtil.formatDate(this.runTime) + "]";
+            + DateUtil.format(this.runTime) + "]";
 
     public ZooKeeperLock(String rootPath, String jobName, String callType, Timestamp runTime,
             CronTask cronTask, boolean isUseDB) {
@@ -67,10 +62,10 @@ public class ZooKeeperLock implements Watcher {
                                     ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
                         }
                     } catch (KeeperException.NodeExistsException e) {
-                        Constant.log_cron.warn(logPrefix + "[path=" + sb.toString()
+                        Constant.LOG_CRON.warn(logPrefix + "[path=" + sb.toString()
                                 + "]NodeExists while instantiating locks object." + e);
                     } catch (Exception e) {
-                        Constant.log_cron.error(logPrefix + "[path=" + sb.toString()
+                        Constant.LOG_CRON.error(logPrefix + "[path=" + sb.toString()
                                 + "]Exception while instantiating locks object." + e);
                         throw new RuntimeException(e);
                     }
@@ -108,29 +103,24 @@ public class ZooKeeperLock implements Watcher {
 
     private Map<String, Object> getLock() throws InterruptedException, KeeperException {
         Map<String, Object> lockStatus = new HashMap<String, Object>(2);
-        if (!this.isDone()) { // quit when already done
-            Constant.log_cron.info("Job[" + this.jobName + "][" + this.callType
-                    + "]has been done," + this.path);
-            lockStatus.put("code", 200);
+        if (this.isDone()) { // quit when already done
+            Constant.LOG_CRON.info("Job[" + this.jobName + "][" + this.callType
+                    + "]has already done," + this.path);
+            lockStatus.put("code", Constant.CronJobStatus.SUCCESS);
             lockStatus.put("desc", logPrefix + "has been done," + this.path);
             return lockStatus;
         } else {
             List<String> children = this.zooKeeper.getChildren(this.path, false);
             String[] nodes = children.toArray(new String[children.size()]);
 
-            for (int i = 0; i < nodes.length; i++) {
-                String node = nodes[i];
-                this.lockNotify.putIfAbsent(node, false);
-            }
-            this.dataNodeNotify.set(false);
-
             Arrays.sort(nodes);// check whether get lock by sorted value
+
             if (this.currentNode.equals(this.path + "/" + nodes[0])) {
-                Constant.log_cron.info(logPrefix + "get lock, start to do action, " + this.path
+                Constant.LOG_CRON.info(logPrefix + "get lock, start to do action, " + this.path
                         + "/" + nodes[0]);
                 return this.doAction();
             } else {
-                Constant.log_cron
+                Constant.LOG_CRON
                         .info(logPrefix + "wait for lock, " + this.path + "/" + nodes[0]);
                 return this.waitForLock(nodes[0]);
             }
@@ -148,7 +138,7 @@ public class ZooKeeperLock implements Watcher {
                     }
                 }
             } catch (Exception e) {
-                Constant.log_cron.error(logPrefix + "Exception occurs while doing isDone" + e);
+                Constant.LOG_CRON.error(logPrefix + "Exception occurs while doing isDone" + e);
 
             }
         }
@@ -165,7 +155,7 @@ public class ZooKeeperLock implements Watcher {
                 this.zooKeeper.setData(this.path, done.getBytes(), stat.getVersion());
             }
         } catch (Exception e) {
-            Constant.log_cron.error(logPrefix + "Exception occurs while doing doAction" + e);
+            Constant.LOG_CRON.error(logPrefix + "Exception occurs while doing doAction" + e);
         }
         return result;
     }
@@ -175,9 +165,7 @@ public class ZooKeeperLock implements Watcher {
         Stat stat = this.zooKeeper.exists(this.path + "/" + node, this);
         if (stat != null) {
             synchronized (lock) {
-                while (!this.lockNotify.get(node) && !this.dataNodeNotify.get()) {
-                    this.lock.wait();
-                }
+                this.lock.wait();
             }
         }
         return this.getLock();
@@ -191,23 +179,19 @@ public class ZooKeeperLock implements Watcher {
     public void process(WatchedEvent event) {
         if (event.getType() == Event.EventType.NodeDeleted) {
             // signal wait thread
-            String path = event.getPath();
-            String lockNode = path.substring(path.lastIndexOf("/") + 1);
-            if (this.lockNotify.containsKey(lockNode)) {
-                synchronized (lock) {
-                    this.lock.notify();
-                    this.lockNotify.put(lockNode, true);
-                    Constant.log_cron.info(logPrefix + "notified, event=" + event.getType()
-                            + ", path=" + event.getPath());
-                }
+            synchronized (lock) {
+                Constant.LOG_CRON.info(logPrefix + "notified, event=" + event.getType()
+                        + ", path=" + event.getPath());
+
+                this.lock.notify();
             }
         } else if (event.getType() == Event.EventType.NodeDataChanged
                 && this.path.equalsIgnoreCase(event.getPath()) && this.isDone) {
             synchronized (lock) {
-                lock.notify();
-                this.dataNodeNotify.set(true);
-                Constant.log_cron.info(logPrefix + "notified, event=" + event.getType()
+                Constant.LOG_CRON.info(logPrefix + "notified, event=" + event.getType()
                         + ", path=" + event.getPath());
+
+                this.lock.notify();
             }
             // delete lock node
             try {
@@ -217,7 +201,7 @@ public class ZooKeeperLock implements Watcher {
                     this.deleteNode(this.path);
                 }
             } catch (Exception e) {
-                Constant.log_cron.info("delete node error " + e);
+                Constant.LOG_CRON.info("delete node error " + e);
             }
         }
     }
@@ -231,7 +215,7 @@ public class ZooKeeperLock implements Watcher {
                 this.zooKeeper.delete(path, -1);
                 isDeleted = true;
             } catch (Exception ex) {
-                Constant.log_cron.info("delete node error : " + path + " by : "
+                Constant.LOG_CRON.info("delete node error : " + path + " by : "
                         + ex.getClass().getName() + "[" + ex.getMessage()
                         + "], waiting for deleteOldNode");
             }

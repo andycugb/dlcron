@@ -25,6 +25,6 @@ public class CountDownWatcher implements Watcher {
         if (connectedLatch != null && watchedEvent.getState() == Event.KeeperState.SyncConnected) {
             this.connectedLatch.countDown();
         }
-        Constant.log_cron.info("[DefaultWatcher] invoke by event:" + watchedEvent);
+        Constant.LOG_CRON.info("[DefaultWatcher] invoke by event:" + watchedEvent);
     }
 }

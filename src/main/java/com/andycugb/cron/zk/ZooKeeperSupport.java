@@ -25,7 +25,7 @@ public class ZooKeeperSupport {
                     try {
                         zooKeeper = createNewZooKeeper();
                     } catch (Exception e) {
-                        Constant.log_cron.error("[initZKConfig] error happens when create new:"
+                        Constant.LOG_CRON.error("[initZKConfig] error happens when create new:"
                                 + e);
                     }
                 }
@@ -35,30 +35,30 @@ public class ZooKeeperSupport {
     }
 
     /**
-     * create new zk client
+     * create new zk client,when zk start,it will creates two async threads,we should wait until the real connect being ok
      * @return zk client
      * @throws Exception
      */
     private static ZooKeeper createNewZooKeeper() throws Exception {
-        Constant.log_cron.info("[createNewZooKeeper] create new zk instance start...");
+        Constant.LOG_CRON.info("[createNewZooKeeper] create new zk instance start...");
         //wait for zk connect->Watcher.Event.KeeperState.SyncConnected
         CountDownLatch connectedLatch = new CountDownLatch(1);
         ZooKeeper zooKeeper =
                 new ZooKeeper(ZooKeeperConfig.getInstance().getConnectUrl(), ZooKeeperConfig.getInstance()
                         .getTimeout(), new CountDownWatcher(connectedLatch));
         if (ZooKeeper.States.CONNECTING == zooKeeper.getState()) {
-            Constant.log_cron.info("[createNewZooKeeper] new instance,wait for state alive.");
+            Constant.LOG_CRON.info("[createNewZooKeeper] new instance,wait for state alive.");
             //check when timeout give up zk lock
             boolean ret =
                     connectedLatch.await(ZooKeeperConfig.getInstance().getTimeout(),
                             TimeUnit.MICROSECONDS);
             if (!ret) {
                 isUseZK = false;
-                Constant.log_cron
+                Constant.LOG_CRON
                         .error("[createNewZookeeper] Can\'t connect to ZK ,please check , now the system will run without ZK.");
             }
         }
-        Constant.log_cron.info("[createNewZookeeper] create new instance finish.");
+        Constant.LOG_CRON.info("[createNewZookeeper] create new instance finish.");
         return zooKeeper;
     }
 }
