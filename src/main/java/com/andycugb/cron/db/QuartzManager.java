@@ -54,6 +54,7 @@ public class QuartzManager {
 
     public void startScheduler() {
         try {
+            this.scheduler = getScheduler();
             if (!this.scheduler.isStarted()) {
                 this.scheduler.start();
             }

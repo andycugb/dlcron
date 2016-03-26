@@ -95,8 +95,8 @@ public class ZooKeeperLock implements Watcher {
                             CreateMode.EPHEMERAL_SEQUENTIAL);
             lockStatus = this.getLock();
         } catch (KeeperException.NoNodeException e) {
-            lockStatus.put("code", 200);
-            lockStatus.put("desc", logPrefix + "has been done," + this.path);
+            lockStatus.put(Constant.RETURN_CODE, 200);
+            lockStatus.put(Constant.RETURN_DESC, logPrefix + "has been done," + this.path);
         }
         return lockStatus;
     }
@@ -106,8 +106,8 @@ public class ZooKeeperLock implements Watcher {
         if (this.isDone()) { // quit when already done
             Constant.LOG_CRON.info("Job[" + this.jobName + "][" + this.callType
                     + "]has already done," + this.path);
-            lockStatus.put("code", Constant.CronJobStatus.SUCCESS);
-            lockStatus.put("desc", logPrefix + "has been done," + this.path);
+            lockStatus.put(Constant.RETURN_CODE, Constant.CronJobStatus.SUCCESS);
+            lockStatus.put(Constant.RETURN_DESC, logPrefix + "has been done," + this.path);
             return lockStatus;
         } else {
             List<String> children = this.zooKeeper.getChildren(this.path, false);

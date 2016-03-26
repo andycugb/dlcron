@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 public class PropertyUtil {
 
     private ResourceBundle bundle = null;
-    private final static String DEFAULT = "config";
+    private static final String DEFAULT = "config";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public PropertyUtil(String baseName, Locale locale) {
@@ -25,7 +25,8 @@ public class PropertyUtil {
             locale = Locale.CHINA;
         }
         try {
-            bundle = ResourceBundle.getBundle(prefix, locale);
+            baseName = prefix + ".properties";
+            bundle = ResourceBundle.getBundle(baseName, locale);
         } catch (Exception e) {
             logger.error("error when load property file:" + e);
         }

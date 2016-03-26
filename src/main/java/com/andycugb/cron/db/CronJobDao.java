@@ -1,6 +1,7 @@
 package com.andycugb.cron.db;
 
 import com.andycugb.cron.util.Constant;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -11,11 +12,8 @@ import java.sql.*;
  */
 @Repository
 public class CronJobDao {
+    @Autowired
     private DataSource dataSource;
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 
     public DataSource getDataSource() {
         return this.dataSource;

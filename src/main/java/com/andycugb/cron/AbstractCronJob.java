@@ -51,60 +51,79 @@ public abstract class AbstractCronJob implements Job, CronTask {
     public String checkWhenDoTask(String jobName, String callType, boolean hasLimitIp,
             Timestamp runTime) {
         Map<String, Object> result = new HashMap<String, Object>();
-        if (JobContainer.runAndGetLock(jobName)) {
-            Constant.LOG_CRON.info("Job[" + jobName + "][" + callType + "]["
-                    + DateUtil.format(runTime) + "] is running, task is canceled for this time.");
-            return "Job[" + jobName + "][" + callType
-                    + "] is running, task is canceled for this time.";
-        } else {
-            CronJobModel model = quartzManager.getJobByName(jobName);
-            int runType = model.getRunType(Constant.SERVER_IP);// if limitIps contains local ip,also
-                                                               // can exec
-            boolean singleCheck = false;// TODO:how to avoid repeat task exec????
-            boolean useZK = ZooKeeperConfig.getInstance().isUseZK();
-            if (hasLimitIp) {
-                if (useZK) {
-                    if (runType == Constant.RunType.RUN_ON_ALL) {
-                        result = this.doTask(jobName, callType, runTime, singleCheck);
-                    } else {
-                        if (runType == Constant.RunType.RUN_ON_LOCAL) {
-                            result = this.doTaskWithZK(jobName, callType, runTime, singleCheck);
-                            if (result.get("code") != null
-                                    && ((Integer) result.get("code")) != Constant.CronJobStatus.SUCCESS
-                                    && ((Integer) result.get("code")) != Constant.CronJobStatus.ERROR) {
-                                // make sure this job will trigger,in case of zk link fail
-                                result = this.doTask(jobName, callType, runTime, singleCheck);
-                            }
-                        }
-                    }
-                } else {
-                    if (runType == Constant.RunType.RUN_ON_LOCAL
-                            || runType == Constant.RunType.RUN_ON_LOCAL) {
-                        result = this.doTask(jobName, callType, runTime, singleCheck);
-                    }
-                }
-            } else {// exec cron job by hand-set
-                if (useZK) {
-                    if (runType == Constant.RunType.RUN_ON_ALL
-                            || runType == Constant.RunType.RUN_ON_NONE) {
-                        result = this.doTask(jobName, callType, runTime, singleCheck);
-                    } else {// only select one server to exec job
-                        result = this.doTaskWithZK(jobName, callType, runTime, singleCheck);
-                        if (result.get("code") != null
-                                && ((Integer) result.get("code")) != Constant.CronJobStatus.SUCCESS
-                                && ((Integer) result.get("code")) != Constant.CronJobStatus.ERROR) {
-                            // make sure this job will trigger,in case of zk link fail
+        try {
+            if (JobContainer.runAndGetLock(jobName)) {
+                Constant.LOG_CRON.info("Job[" + jobName + "][" + callType + "]["
+                        + DateUtil.format(runTime)
+                        + "] is running, task is canceled for this time.");
+                return "Job[" + jobName + "][" + callType
+                        + "] is running, task is canceled for this time.";
+            } else {
+                CronJobModel model = quartzManager.getJobByName(jobName);
+                int runType = model.getRunType(Constant.SERVER_IP);// if limitIps contains local
+                                                                   // ip,also
+                // can exec
+                boolean singleCheck = false;// TODO:how to avoid repeat task exec????
+                boolean useZK = ZooKeeperConfig.getInstance().isUseZK();
+                if (hasLimitIp) {
+                    if (useZK) {
+                        if (runType == Constant.RunType.RUN_ON_ALL) {
+                            result = this.doTask(jobName, callType, runTime, singleCheck);
+                        } else {
                             if (runType == Constant.RunType.RUN_ON_LOCAL) {
-                                result = this.doTask(jobName, callType, runTime, singleCheck);
+                                String prop =
+                                        Constant.PROP_UTIL
+                                                .getProperty(Constant.CRON_SINGLE_CHECK);
+                                if (Boolean.valueOf(prop)) {
+                                    singleCheck = true;
+                                }
+                                result =
+                                        this.doTaskWithZK(jobName, callType, runTime, singleCheck);
+                                if (result.get(Constant.RETURN_CODE) != null
+                                        && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.SUCCESS
+                                        && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.ERROR) {
+                                    // make sure this job will trigger,in case of zk link failed
+                                    result = this.doTask(jobName, callType, runTime, singleCheck);
+                                }
                             }
                         }
+                    } else {
+                        if (runType == Constant.RunType.RUN_ON_LOCAL
+                                || runType == Constant.RunType.RUN_ON_ALL) {
+                            result = this.doTask(jobName, callType, runTime, singleCheck);
+                        }
                     }
-                } else {
-                    result = this.doTask(jobName, callType, runTime, singleCheck);
+                } else { // exec cron job by hand-set
+                    if (useZK) {
+                        if (runType == Constant.RunType.RUN_ON_ALL
+                                || runType == Constant.RunType.RUN_ON_NONE) {
+                            result = this.doTask(jobName, callType, runTime, singleCheck);
+                        } else { // only select one server to exec job
+                            result = this.doTaskWithZK(jobName, callType, runTime, singleCheck);
+                            if (result.get(Constant.RETURN_CODE) != null
+                                    && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.SUCCESS
+                                    && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.ERROR) {
+                                // make sure this job will trigger,in case of zk link fail
+                                if (runType == Constant.RunType.RUN_ON_LOCAL) {
+                                    result = this.doTask(jobName, callType, runTime, singleCheck);
+                                }
+                            }
+                        }
+                    } else {
+                        result = this.doTask(jobName, callType, runTime, singleCheck);
+                    }
                 }
             }
+        } catch (Exception e) {
+            String desc =
+                    "Job[" + jobName + "][" + callType + "][" + DateUtil.format(runTime)
+                            + "]Exception occurs while doing job, " + e.toString();
+            Constant.LOG_CRON.error(desc, e);
+            result.put(Constant.RETURN_DESC, desc);
+        } finally {
+            JobContainer.finished(jobName);
         }
-        return String.valueOf(result.get("desc"));
+        return String.valueOf(result.get(Constant.RETURN_DESC));
     }
 
     /**
@@ -132,8 +151,8 @@ public abstract class AbstractCronJob implements Job, CronTask {
             String desc =
                     "Exception occurs while doing job[" + jobName + "][" + callType + "]["
                             + DateUtil.format(runTime) + "]";
-            result.put("desc", desc);
-            result.put("code", Constant.CronJobStatus.RETRY);
+            result.put(Constant.RETURN_DESC, desc);
+            result.put(Constant.RETURN_CODE, Constant.CronJobStatus.RETRY);
             Constant.LOG_CRON.error(desc, e);
         }
         return result;
@@ -157,12 +176,10 @@ public abstract class AbstractCronJob implements Job, CronTask {
                         Constant.LOG_CRON.warn("Job[" + jobName + "][" + callType + "]["
                                 + DateUtil.format(runTime)
                                 + "] not exists，cancelled for this time");
-                        result.put("code", Constant.CronJobStatus.SUCCESS);
-                        result.put(
-                                "desc",
-                                "Job[" + jobName + "][" + callType + "]["
-                                        + DateUtil.format(runTime)
-                                        + "] not exists，cancelled for this time");
+                        result.put(Constant.RETURN_CODE, Constant.CronJobStatus.SUCCESS);
+                        result.put(Constant.RETURN_DESC, "Job[" + jobName + "][" + callType
+                                + "][" + DateUtil.format(runTime)
+                                + "] not exists，cancelled for this time");
                         return result;
                     }
 
@@ -172,13 +189,11 @@ public abstract class AbstractCronJob implements Job, CronTask {
                                 + DateUtil.format(runTime) + "] has been fired on "
                                 + DateUtil.format(model.getLastRunTime())
                                 + ", cancelled for this time");
-                        result.put("code", Constant.CronJobStatus.SUCCESS);
-                        result.put(
-                                "desc",
-                                "Job[" + jobName + "][" + callType + "]["
-                                        + DateUtil.format(runTime) + "] has been fired on "
-                                        + DateUtil.format(model.getLastRunTime())
-                                        + ", canceled for this time");
+                        result.put(Constant.RETURN_CODE, Constant.CronJobStatus.SUCCESS);
+                        result.put(Constant.RETURN_DESC, "Job[" + jobName + "][" + callType
+                                + "][" + DateUtil.format(runTime) + "] has been fired on "
+                                + DateUtil.format(model.getLastRunTime())
+                                + ", canceled for this time");
                         return result;
                     }
                 }
@@ -189,8 +204,8 @@ public abstract class AbstractCronJob implements Job, CronTask {
 
                 // real business logic
                 String desc = this.doJob();
-                result.put("desc", desc);
-                result.put("code", Constant.CronJobStatus.SUCCESS);
+                result.put(Constant.RETURN_DESC, desc);
+                result.put(Constant.RETURN_CODE, Constant.CronJobStatus.SUCCESS);
 
                 long end = System.currentTimeMillis();
                 Constant.LOG_CRON.info("Job[" + jobName + "][" + callType + "]["
@@ -199,9 +214,9 @@ public abstract class AbstractCronJob implements Job, CronTask {
             } catch (Throwable e) {
                 Constant.LOG_CRON.error("Exception occurs while doing service[" + jobName + "]["
                         + callType + "][" + DateUtil.format(runTime) + "]" + e);
-                result.put("code", Constant.CronJobStatus.ERROR);
-                result.put("desc", "Exception occurs while doing service[" + jobName + "]["
-                        + callType + "][" + DateUtil.format(runTime) + "], " + e);
+                result.put(Constant.RETURN_CODE, Constant.CronJobStatus.ERROR);
+                result.put(Constant.RETURN_DESC, "Exception occurs while doing service["
+                        + jobName + "][" + callType + "][" + DateUtil.format(runTime) + "], " + e);
             }
             return null;
         } finally {
