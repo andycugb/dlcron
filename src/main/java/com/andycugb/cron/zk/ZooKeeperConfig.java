@@ -12,11 +12,6 @@ public class ZooKeeperConfig {
     private String connectUrl;
     private int timeout = 30000;// default timeout
 
-    // inner class as singleton
-    static class ZKConfigHolder {
-        private static final ZooKeeperConfig INSTANCE = new ZooKeeperConfig();
-    }
-
     public static ZooKeeperConfig getInstance() {
         return ZKConfigHolder.INSTANCE;
     }
@@ -72,5 +67,10 @@ public class ZooKeeperConfig {
 
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    // inner class as singleton
+    static class ZKConfigHolder {
+        private static final ZooKeeperConfig INSTANCE = new ZooKeeperConfig();
     }
 }

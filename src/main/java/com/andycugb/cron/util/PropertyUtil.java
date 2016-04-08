@@ -1,42 +1,90 @@
 package com.andycugb.cron.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Created by jbcheng on 2016-03-16.
  */
 public class PropertyUtil {
 
-    private ResourceBundle bundle = null;
-    private static final String DEFAULT = "config";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static Properties properties = null;
 
-    public PropertyUtil(String baseName, Locale locale) {
-        String prefix = DEFAULT;
-        if (StringUtils.isNotBlank(baseName)) {
-            prefix = baseName.trim();
+    static {
+        ClassLoader loader = PropertyUtil.class.getClassLoader();
+        if (loader == null) {
+            String msg = "error when get class load";
+            Constant.LOG_CRON.error(msg);
+            throw new RuntimeException(msg);
         }
-        if (locale == null) {
-            locale = Locale.CHINA;
+        InputStream stream = loader.getResourceAsStream("config.properties");
+        Constant.LOG_CRON.debug("[initProp] init InputStream by cron.properties.");
+        if (stream == null) {
+            stream = loader.getResourceAsStream("/config.properties");
+            Constant.LOG_CRON.debug("[initProp] init InputStream by /cron.properties.");
         }
-        try {
-            baseName = prefix + ".properties";
-            bundle = ResourceBundle.getBundle(baseName, locale);
-        } catch (Exception e) {
-            logger.error("error when load property file:" + e);
+        if (stream == null) {
+            stream = loader.getResourceAsStream("com/andycugb/cron/config.properties");
+            Constant.LOG_CRON
+                    .debug("[initProp] init InputStream by com/andycugb/cron/cron.properties.");
+        }
+        if (stream != null) {
+            try {
+                properties.load(stream);
+            } catch (IOException e) {
+                Constant.LOG_CRON.error("[initProp] error when load resources");
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    Constant.LOG_CRON.error("[initProp] error when close resources");
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
-    public String getProperty(String key) {
-        String value = bundle.getString(key);
+
+    public static String getStringProperty(String key, String def) {
+        String value = getStringProperty(key);
         if (StringUtils.isBlank(value)) {
-            logger.error("cannot find value by key:" + key);
+            value = def;
         }
         return value;
+    }
+
+    public static String getStringProperty(String key) {
+        String value = properties.getProperty(key);
+        if (StringUtils.isBlank(value)) {
+            Constant.LOG_CRON.warn("cannot find value by key:" + key);
+        }
+        return value;
+    }
+
+    public static int getIntProperty(String key, int def) {
+        try {
+            return getIntProperty(key);
+        } catch (NumberFormatException e) {
+            Constant.LOG_CRON.warn("wrong number to parse:" + e);
+        }
+        return def;
+    }
+
+    public static int getIntProperty(String key) throws NumberFormatException {
+        String value = properties.getProperty(key);
+        if (StringUtils.isNumeric(value)) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                Constant.LOG_CRON.warn("wrong number to parse:" + value + "--" + e);
+                throw new NumberFormatException(e.getMessage());
+            }
+        } else {
+            throw new NumberFormatException("wrong number to parse:" + value);
+        }
     }
 }

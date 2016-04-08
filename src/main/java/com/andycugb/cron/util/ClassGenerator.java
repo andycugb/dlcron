@@ -5,15 +5,15 @@ package com.andycugb.cron.util;
  */
 public class ClassGenerator {
 
-    static class ClassHolder{
-        private static ClassGenerator INSTANCE=new ClassGenerator();
-    }
-
-    public static ClassGenerator getInstance(){
+    public static ClassGenerator getInstance() {
         return ClassHolder.INSTANCE;
     }
 
-    public Class<?> getClazz(String methodName,String clazzName){
+    public Class<?> getClazz(String methodName, String clazzName) {
         return null;
+    }
+
+    static class ClassHolder {
+        private static ClassGenerator INSTANCE = new ClassGenerator();
     }
 }

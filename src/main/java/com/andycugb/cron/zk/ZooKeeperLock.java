@@ -5,7 +5,12 @@ import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.DateUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zookeeper.*;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import java.sql.Timestamp;
@@ -18,21 +23,20 @@ import java.util.Map;
  * Created by jbcheng on 2016-03-17.
  */
 public class ZooKeeperLock implements Watcher {
+    private final Object lock = new Object();
+    private final String doing = "doing";
+    private final String done = "done";
     private ZooKeeper zooKeeper;
     private String path;
     private String jobName;
     private String callType;
     private Timestamp runTime;
+    private final String logPrefix = "Job[" + this.jobName + "][" + this.callType + "]["
+            + DateUtil.format(this.runTime) + "]";
     private String currentNode;
     private boolean isDone;
     private boolean isUseDB;
     private CronTask cronTask;
-    private final Object lock = new Object();
-
-    private final String doing = "doing";
-    private final String done = "done";
-    private final String logPrefix = "Job[" + this.jobName + "][" + this.callType + "]["
-            + DateUtil.format(this.runTime) + "]";
 
     public ZooKeeperLock(String rootPath, String jobName, String callType, Timestamp runTime,
             CronTask cronTask, boolean isUseDB) {

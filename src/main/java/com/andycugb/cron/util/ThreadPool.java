@@ -19,16 +19,16 @@ public class ThreadPool {
                         new ThreadPoolExecutor.AbortPolicy());
     }
 
-    static class ThreadPoolHolder {
-        private static ThreadPool INSTANCE = new ThreadPool();
-    }
-
     public static ThreadPool getInstance() {
         return ThreadPoolHolder.INSTANCE;
     }
 
     public void exec(Runnable cmd) {
         this.exec.execute(cmd);
+    }
+
+    static class ThreadPoolHolder {
+        private static ThreadPool INSTANCE = new ThreadPool();
     }
 
 }

@@ -1,11 +1,18 @@
 package com.andycugb.cron.db;
 
 import com.andycugb.cron.util.Constant;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jbcheng on 2016-03-17.
@@ -19,6 +26,85 @@ public class CronJobDao {
         return this.dataSource;
     }
 
+    /**
+     * get crons by group
+     * 
+     * @param group group name
+     * @return cron model list
+     */
+    public List<CronJobModel> getAllCronByGroup(String group) {
+        List<CronJobModel> models = new ArrayList<CronJobModel>();
+        Connection connection = null;
+        PreparedStatement pst = null;
+        ResultSet rst = null;
+
+        try {
+            connection = getDataSource().getConnection();
+            String sql;
+            if (StringUtils.isBlank(group)) {
+                sql =
+                        "select ID,CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP, GROUP_NAME from tb_cron_ini  where GROUP_NAME is null or GROUP_NAME=\'\'";
+                Constant.LOG_CRON.debug("[getAllCron] select cron sql :" + sql);
+                pst = connection.prepareStatement(sql);
+            } else {
+                sql =
+                        "select ID, CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP, GROUP_NAME from tb_cron_ini  where GROUP_NAME=? ";
+                pst = connection.prepareStatement(sql);
+                Constant.LOG_CRON.debug("[getAllCronByGroup] select cron sql :" + sql);
+                pst.setString(1, group);
+            }
+
+            rst = pst.executeQuery();
+
+            while (rst.next()) {
+                CronJobModel e1 = this.createCronJonModel(rst, false);
+                models.add(e1);
+                Constant.LOG_CRON.debug("[getAllCronByGroup] select a cron from DB :"
+                        + e1.toString());
+            }
+
+            Constant.LOG_CRON
+                    .debug("[getAllCronByGroup] select some cron from DB. [cronModelListSize = "
+                            + models.size() + "].");
+        } catch (Exception e) {
+            Constant.LOG_CRON.error("Exception occurs while reading data from database" + e);
+        } finally {
+            if (rst != null) {
+                try {
+                    rst.close();
+                } catch (SQLException e) {
+                    Constant.LOG_CRON.error("error when close result set," + e);
+                }
+            }
+
+            if (pst != null) {
+                try {
+                    pst.close();
+                } catch (SQLException e) {
+                    Constant.LOG_CRON.error("error when close prepared statement," + e);
+                }
+            }
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    Constant.LOG_CRON.error("error when close connection," + e);
+                }
+            }
+
+        }
+
+        return models;
+    }
+
+    /**
+     * get cron by name
+     * 
+     * @param conn datasource connection
+     * @param cronName cron name
+     * @return cron model
+     */
     public CronJobModel getCronByName(Connection conn, String cronName) {
         PreparedStatement pst = null;
         ResultSet rs = null;
@@ -56,6 +142,13 @@ public class CronJobDao {
         return model;
     }
 
+    /**
+     * update cron`s last run time
+     * 
+     * @param conn datasource connection
+     * @param jobName cron name
+     * @param runTime running time
+     */
     public void updateLastRunTime(Connection conn, String jobName, Timestamp runTime) {
         PreparedStatement pst = null;
         try {

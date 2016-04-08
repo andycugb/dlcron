@@ -6,6 +6,10 @@ import org.apache.log4j.Logger;
  * Created by jbcheng on 2016-03-16.
  */
 public final class Constant {
+    public static final String CRON_SINGLE_CHECK = "cron.single.check";
+    public static final Logger LOG_CRON = Logger.getLogger("cron.log");
+    public static final String RETURN_DESC = "desc";
+    public static final String RETURN_CODE = "code";
     public static String SERVER_IP;
 
     public static final class CronJobStatus {
@@ -20,11 +24,4 @@ public final class Constant {
         public static final int RUN_ON_OTHER = 3;// any server run exclude local
         public static final int RUN_ON_LOCAL = 4;// any server run include local
     }
-
-    public static PropertyUtil PROP_UTIL;
-    public static final String CRON_SINGLE_CHECK = "cron.single.check";
-    public static final Logger LOG_CRON = Logger.getLogger("cron.log");
-
-    public static final String RETURN_DESC = "desc";
-    public static final String RETURN_CODE = "code";
 }

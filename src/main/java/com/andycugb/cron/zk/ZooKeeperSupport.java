@@ -10,12 +10,13 @@ import java.util.concurrent.TimeUnit;
  * Created by jbcheng on 2016-03-16.
  */
 public class ZooKeeperSupport {
-    private static volatile ZooKeeper zooKeeper = null;
     private static final Object zookeeperLock = new Object();
     public static boolean isUseZK = true;
+    private static volatile ZooKeeper zooKeeper = null;
 
     /**
      * get zk client,create a new one when necessary
+     * 
      * @return zk client
      */
     public static ZooKeeper getZooKeeper() {
@@ -34,21 +35,27 @@ public class ZooKeeperSupport {
         return zooKeeper;
     }
 
+    public static void setZookeeper(ZooKeeper zookeeper){
+        ZooKeeperSupport.zooKeeper=zookeeper;
+    }
+
     /**
-     * create new zk client,when zk start,it will creates two async threads,we should wait until the real connect being ok
+     * create new zk client,when zk start,it will creates two async threads,we should wait until the
+     * real connect being ok
+     * 
      * @return zk client
      * @throws Exception
      */
-    private static ZooKeeper createNewZooKeeper() throws Exception {
+    public static ZooKeeper createNewZooKeeper() throws Exception {
         Constant.LOG_CRON.info("[createNewZooKeeper] create new zk instance start...");
-        //wait for zk connect->Watcher.Event.KeeperState.SyncConnected
+        // wait for zk connect->Watcher.Event.KeeperState.SyncConnected
         CountDownLatch connectedLatch = new CountDownLatch(1);
         ZooKeeper zooKeeper =
-                new ZooKeeper(ZooKeeperConfig.getInstance().getConnectUrl(), ZooKeeperConfig.getInstance()
-                        .getTimeout(), new CountDownWatcher(connectedLatch));
+                new ZooKeeper(ZooKeeperConfig.getInstance().getConnectUrl(), ZooKeeperConfig
+                        .getInstance().getTimeout(), new CountDownWatcher(connectedLatch));
         if (ZooKeeper.States.CONNECTING == zooKeeper.getState()) {
             Constant.LOG_CRON.info("[createNewZooKeeper] new instance,wait for state alive.");
-            //check when timeout give up zk lock
+            // check when timeout give up zk lock
             boolean ret =
                     connectedLatch.await(ZooKeeperConfig.getInstance().getTimeout(),
                             TimeUnit.MICROSECONDS);

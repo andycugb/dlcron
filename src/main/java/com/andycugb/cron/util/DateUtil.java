@@ -24,9 +24,10 @@ public class DateUtil {
 
     }
 
-    public static String getExecTime(Timestamp timestamp){
+    public static String getExecTime(Timestamp timestamp) {
         return new SimpleDateFormat(TIME_FORMAT_1).format(timestamp);
     }
+
     public static Timestamp toTimeStamp(Date date) {
         return new Timestamp(date.getTime());
     }

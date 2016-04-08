@@ -10,11 +10,13 @@ public interface CronTask {
 
     /**
      * do schedule business logic
+     * 
      * @param jobName invoke method
      * @param callType invoke type
      * @param runTime execute time
      * @param isUseDB whether use db config
      * @return
      */
-    public Map<String,Object> doTask(String jobName,String callType,Timestamp runTime,boolean isUseDB);
+    public Map<String, Object> doTask(String jobName, String callType, Timestamp runTime,
+            boolean isUseDB);
 }
