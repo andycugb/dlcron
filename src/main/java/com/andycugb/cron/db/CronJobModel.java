@@ -1,10 +1,12 @@
 package com.andycugb.cron.db;
 
+import com.andycugb.cron.Inner;
 import com.andycugb.cron.util.Constant;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -75,7 +77,7 @@ public class CronJobModel {
         this.limitIpSet = limitIpSet;
     }
 
-    public boolean isBlock() {
+    public boolean getIsBlock() {
         return isBlock;
     }
 
@@ -83,7 +85,7 @@ public class CronJobModel {
         this.isBlock = isBlock;
     }
 
-    public boolean isFirstIp() {
+    public boolean getIsFirstIp() {
         return isFirstIp;
     }
 
@@ -131,6 +133,22 @@ public class CronJobModel {
         this.lastRunTime = lastRunTime;
     }
 
+    public CronJobModel(){
+
+    }
+
+    public CronJobModel(CronJobModel cronModel) {
+        this.cronName = cronModel.getCronName();
+        this.serviceName = cronModel.getServiceName();
+        this.cronExpression = cronModel.getCronExpression();
+        this.limitIp = cronModel.getLimitIp();
+        this.cronDesc = cronModel.getCronDesc();
+        this.fireOnStartUp = cronModel.getFireOnStartUp();
+        this.group = cronModel.getGroup();
+        this.isBlock = cronModel.getIsBlock();
+        this.isFirstIp = cronModel.getIsFirstIp();
+    }
+
     /**
      * set run type by given limit ips
      * 
@@ -165,6 +183,37 @@ public class CronJobModel {
         return runType;
     }
 
+    public synchronized void parse(){
+        /*if (!this.parsed.get()) {
+            this.check();
+            String realLimitIp=this.limitIp;
+            if (this.limitIp.toLowerCase().startsWith("block:")) {
+                realLimitIp=this.limitIp.substring("block:".length());
+                this.isBlock=true;
+            }
+
+            String firstIp=realLimitIp.split(";")[0];
+            if (firstIp.equals(Constant.SERVER_IP)){
+                this.isFirstIp=true;
+            }
+
+            String[] services=this.serviceName.split(";");
+            int serviceLength=services.length;
+            ArrayList<Entity> innerListTmp=new ArrayList<Entity>();
+
+            for (int i=0;i<serviceLength;++i){
+                int lIndex=services[i].indexOf("(");
+                int rIndex=services[i].indexOf(")");
+                if (lIndex==-1||rIndex==-1||rIndex<lIndex){
+                    throw new CronModelException("Incorrect bracket in service name, " + this.toString());
+                }
+
+                String lStr=services[i].substring(0,lIndex);
+//                String[] t
+            }
+        }*/
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -173,5 +222,65 @@ public class CronJobModel {
         sb.append(", cronExpression=").append(this.cronExpression);
         sb.append(", limitIp=").append(this.limitIp);
         return sb.toString();
+    }
+
+    private class Entity implements Inner {
+        private String beanId;
+        private String className;
+        private String methodName;
+        private String[] variableValues;
+        private String[] variableTypes;
+        private String methodDesc;
+        private String returnType;
+
+        Entity(String beanId, String className, String classType, String methodName, String[] variableValues, String[] variableTypes, String methodDesc, String returnType) {
+            this.beanId = beanId;
+            this.className = className;
+            this.methodName = methodName;
+            this.variableValues = variableValues;
+            this.variableTypes = variableTypes;
+            this.methodDesc = methodDesc;
+            this.returnType = returnType;
+        }
+
+        public String getClassName() {
+            return this.className;
+        }
+
+        public String getMethodDesc() {
+            return this.methodDesc;
+        }
+
+        public String getMethodName() {
+            return this.methodName;
+        }
+
+        public String getReturnType() {
+            return this.returnType;
+        }
+
+        public String[] getVariableTypes() {
+            return this.variableTypes;
+        }
+
+        public String[] getVariableValues() {
+            return this.variableValues;
+        }
+
+        public String getBeanId() {
+            return this.beanId;
+        }
+
+        public String toString() {
+            StringBuilder b = new StringBuilder();
+            b.append("beanId=").append(this.beanId);
+            b.append(", className=").append(this.className);
+            b.append(", methodName=").append(this.methodName);
+            b.append(", variableValues=").append(Arrays.toString(this.variableValues));
+            b.append(", variableTypes=").append(Arrays.toString(this.variableTypes));
+            b.append(", methodDesc=").append(this.methodDesc);
+            b.append(", returnType=").append(this.returnType);
+            return b.toString();
+        }
     }
 }

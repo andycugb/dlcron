@@ -5,6 +5,7 @@ import com.andycugb.cron.db.CronJobModel;
 import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.DateUtil;
+import com.andycugb.cron.util.PropertyUtil;
 import com.andycugb.cron.zk.ZooKeeperConfig;
 import com.andycugb.cron.zk.ZooKeeperLock;
 import org.quartz.Job;
@@ -72,8 +73,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
                         } else {
                             if (runType == Constant.RunType.RUN_ON_LOCAL) {
                                 String prop =
-                                        Constant.PROP_UTIL
-                                                .getProperty(Constant.CRON_SINGLE_CHECK);
+                                        PropertyUtil.getStringProperty(Constant.CRON_SINGLE_CHECK);
                                 if (Boolean.valueOf(prop)) {
                                     singleCheck = true;
                                 }

@@ -17,7 +17,10 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -66,11 +69,44 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
 
     private synchronized void refreshCron() {
         Constant.LOG_CRON.info("[Refresh]start to refresh cron config");
-        List<CronJobModel> dbCronList=this.loadFormDB();
+        List<CronJobModel> dbCronList = this.loadFormDB();
+        if (CollectionUtils.isNotEmpty(dbCronList)) {
+            Map<String, CronJobModel> tempCronMap = new HashMap<String, CronJobModel>();
+            Map<String, CronJobModel> deletedCronMap = new HashMap<String, CronJobModel>();
+            Iterator<CronJobModel> cancelCronMap = dbCronList.iterator();
+            CronJobModel oldCron;
+            while (cancelCronMap.hasNext()) {
+                CronJobModel addCron = cancelCronMap.next();
+
+                try {
+                    addCron.parse();
+                    String[] crons = addCron.getCronExpression().split(";");
+                    int len = crons.length;
+                    for (int index = 0; index < len; index++) {
+                        String cron1 =
+                                (index == 0) ? addCron.getCronName() : addCron.getCronName()
+                                        + "_" + index;
+                        oldCron = new CronJobModel(addCron);
+                        oldCron.setCronExpression(crons[index]);
+                        oldCron.setCronName(cron1);
+                        if (deletedCronMap.containsKey(cron1)) {
+                            deletedCronMap.put(cron1,oldCron);
+                        } else if (tempCronMap.containsKey(cron1)) {
+                            tempCronMap.remove(cron1);
+                            deletedCronMap.put(cron1,oldCron);
+                        } else {
+                            tempCronMap.put(cron1, oldCron);
+                        }
+                    }
+                } catch (Exception e) {
+                    Constant.LOG_CRON.error("Unknown exception occurs while register cron, " + addCron.toString(), e);
+                }
+            }
+        }
 
     }
 
-    private List<CronJobModel> loadFormDB(){
+    private List<CronJobModel> loadFormDB() {
         return cronJobDao.getAllCronByGroup(PropertyUtil.getStringProperty("cron.group.name"));
     }
 

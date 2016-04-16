@@ -56,5 +56,8 @@ public class IpUtil {
         System.out.println(Arrays.toString(getServerIps(true).toArray()));
         System.out.println("==========================");
         System.out.println(Arrays.toString(getServerIps(false).toArray()));
+
+        String str="hello,.<>?/\\|]}[{';:-_)(*&^%$#@!~`";
+        System.out.println(str.replaceAll("\\pP|\\pS", ""));
     }
 }
