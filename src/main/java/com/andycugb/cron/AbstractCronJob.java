@@ -71,9 +71,10 @@ public abstract class AbstractCronJob implements Job, CronTask {
                         if (runType == Constant.RunType.RUN_ON_ALL) {
                             result = this.doTask(jobName, callType, runTime, singleCheck);
                         } else {
-                            if (runType == Constant.RunType.RUN_ON_LOCAL) {
+                            if (runType == Constant.RunType.RUN_ON_ANY) {
                                 String prop =
-                                        PropertyUtil.getStringProperty(Constant.CRON_SINGLE_CHECK);
+                                        PropertyUtil
+                                                .getStringProperty(Constant.CRON_SINGLE_CHECK);
                                 if (Boolean.valueOf(prop)) {
                                     singleCheck = true;
                                 }
@@ -88,7 +89,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
                             }
                         }
                     } else {
-                        if (runType == Constant.RunType.RUN_ON_LOCAL
+                        if (runType == Constant.RunType.RUN_ON_ANY
                                 || runType == Constant.RunType.RUN_ON_ALL) {
                             result = this.doTask(jobName, callType, runTime, singleCheck);
                         }
@@ -104,7 +105,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
                                     && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.SUCCESS
                                     && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.ERROR) {
                                 // make sure this job will trigger,in case of zk link fail
-                                if (runType == Constant.RunType.RUN_ON_LOCAL) {
+                                if (runType == Constant.RunType.RUN_ON_ANY) {
                                     result = this.doTask(jobName, callType, runTime, singleCheck);
                                 }
                             }

@@ -35,8 +35,8 @@ public class ZooKeeperSupport {
         return zooKeeper;
     }
 
-    public static void setZookeeper(ZooKeeper zookeeper){
-        ZooKeeperSupport.zooKeeper=zookeeper;
+    public static void setZookeeper(ZooKeeper zookeeper) {
+        ZooKeeperSupport.zooKeeper = zookeeper;
     }
 
     /**

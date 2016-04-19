@@ -6,8 +6,7 @@ package com.andycugb.cron;
 public class CronModelException extends RuntimeException {
     private static final long serialVersionUID = 5348312283301889114L;
 
-    public CronModelException() {
-    }
+    public CronModelException() {}
 
     public CronModelException(String message, Throwable cause) {
         super(message, cause);

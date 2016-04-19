@@ -3,7 +3,7 @@ package com.andycugb.cron.db;
 
 import com.andycugb.cron.CronDeployException;
 import com.andycugb.cron.StartUpCronTask;
-import com.andycugb.cron.util.ClassGenerator;
+import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.ThreadPool;
 import org.quartz.JobKey;
@@ -27,6 +27,7 @@ public class QuartzManager {
     private Map<String, CronJobModel> cronModel = new HashMap<String, CronJobModel>();
     private ClassGenerator classGenerator = ClassGenerator.getInstance();
 
+    // init scheduler
     private void initScheduler() {
         if (this.scheduler == null) {
             try {
@@ -43,6 +44,11 @@ public class QuartzManager {
         return cronModel;
     }
 
+    /**
+     * reset scheduler cron jobs
+     * 
+     * @param cronModel job map
+     */
     public void reloadCronModels(Map<String, CronJobModel> cronModel) {
         this.cronModel = cronModel;
     }
@@ -52,6 +58,9 @@ public class QuartzManager {
         return this.scheduler;
     }
 
+    /**
+     * start scheduler,if not start
+     */
     public void startScheduler() {
         try {
             this.scheduler = getScheduler();
@@ -64,42 +73,59 @@ public class QuartzManager {
         }
     }
 
+    /**
+     * get cron job by name
+     * 
+     * @param jobName cron job name
+     * @return cron
+     */
     public CronJobModel getJobByName(String jobName) {
         return this.cronModel.get(jobName);
     }
 
-    public boolean addNewJob(CronJobModel model) {
-        if (1 == model.getFireOnStartUp()) {
-            ThreadPool.getInstance().exec(new StartUpCronTask(model));
+    /**
+     * add new cron job to scheduler
+     * 
+     * @param cron cron to be added
+     * @return add status
+     */
+    public boolean addNewJob(CronJobModel cron) {
+        if (1 == cron.getFireOnStartUp()) {
+            ThreadPool.getInstance().exec(new StartUpCronTask(cron));
         }
         this.initScheduler();
         boolean success = false;
-        Class clazz = this.classGenerator.getClazz(model.getCronName(), model.getServiceName());
+        Class clazz = this.classGenerator.getClazz(cron.getCronName(), cron.getServiceName());
         if (clazz != null) {
             JobDetailImpl job = new JobDetailImpl();
-            job.setName(model.getCronName());
+            job.setName(cron.getCronName());
             job.setJobClass(clazz);
 
             try {
                 CronTriggerImpl trigger = new CronTriggerImpl();
-                trigger.setName(model.getCronName());
-                trigger.setCronExpression(model.getCronExpression());
+                trigger.setName(cron.getCronName());
+                trigger.setCronExpression(cron.getCronExpression());
 
                 this.scheduler.scheduleJob(job, trigger);
             } catch (ParseException e) {
                 Constant.LOG_CRON.error(
                         "Fail to start cron system: Fail to deploying cron, cron="
-                                + model.toString(), e);
+                                + cron.toString(), e);
             } catch (SchedulerException e) {
                 Constant.LOG_CRON.error(
                         "Fail to start cron system: Fail to deploying cron, cron="
-                                + model.toString(), e);
+                                + cron.toString(), e);
             }
         }
         return success;
     }
 
-    public void deleteJob(String jobName) {
+    /**
+     * delete cron job by name
+     * 
+     * @param jobName cron job name
+     */
+    public void deleteJob(String jobName) throws CronDeployException {
         this.initScheduler();
         try {
             this.scheduler.deleteJob(new JobKey(jobName));

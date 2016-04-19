@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +52,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
-
+        Constant.APP_CONTEXT = applicationContext;
     }
 
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
@@ -61,18 +62,11 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
         }
     }
 
-    class InnerStartUpThread implements Runnable {
-        public void run() {
-            StartUpListener.this.refreshCron();
-        }
-    }
-
     private synchronized void refreshCron() {
         Constant.LOG_CRON.info("[Refresh]start to refresh cron config");
         List<CronJobModel> dbCronList = this.loadFormDB();
         if (CollectionUtils.isNotEmpty(dbCronList)) {
             Map<String, CronJobModel> tempCronMap = new HashMap<String, CronJobModel>();
-            Map<String, CronJobModel> deletedCronMap = new HashMap<String, CronJobModel>();
             Iterator<CronJobModel> cancelCronMap = dbCronList.iterator();
             CronJobModel oldCron;
             while (cancelCronMap.hasNext()) {
@@ -89,21 +83,98 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
                         oldCron = new CronJobModel(addCron);
                         oldCron.setCronExpression(crons[index]);
                         oldCron.setCronName(cron1);
-                        if (deletedCronMap.containsKey(cron1)) {
-                            deletedCronMap.put(cron1,oldCron);
-                        } else if (tempCronMap.containsKey(cron1)) {
-                            tempCronMap.remove(cron1);
-                            deletedCronMap.put(cron1,oldCron);
-                        } else {
-                            tempCronMap.put(cron1, oldCron);
-                        }
+                        tempCronMap.put(cron1, oldCron);
                     }
                 } catch (Exception e) {
-                    Constant.LOG_CRON.error("Unknown exception occurs while register cron, " + addCron.toString(), e);
+                    Constant.LOG_CRON.error("Unknown exception occurs while register cron, "
+                            + addCron.toString(), e);
                 }
             }
+
+            // add、cancel job
+            ArrayList<CronJobModel> addList = new ArrayList<CronJobModel>();
+            ArrayList<CronJobModel> cancelList = new ArrayList<CronJobModel>();
+            Iterator<CronJobModel> iterator = tempCronMap.values().iterator();
+            while (iterator.hasNext()) {
+                CronJobModel model = iterator.next();
+                oldCron = this.quartzManager.getJobByName(model.getCronName());
+                if (null == oldCron) {
+                    if (this.isExecute(model)) {
+                        addList.add(model);
+                    }
+                } else if (!oldCron.equals(model)) {
+                    if (this.isExecute(oldCron)) {
+                        cancelList.add(oldCron);
+                    }
+                    if (this.isExecute(model)) {
+                        addList.add(model);
+                    }
+                }
+            }
+            iterator = this.quartzManager.geAllCronModels().values().iterator();
+            while (iterator.hasNext()) {
+                oldCron = iterator.next();
+                if (!tempCronMap.containsKey(oldCron.getCronName())) {
+                    cancelList.add(oldCron);
+                }
+            }
+            this.quartzManager.reloadCronModels(tempCronMap);
+            int cancelSize = cancelList.size(), addSize = addList.size();
+            if (cancelSize > 0) {
+                this.cancelJob(cancelList);
+            }
+            if (addSize > 0) {
+                this.addJob(addList);
+            }
+            Constant.LOG_CRON.info("[Refresh]Finish to refresh cron config, cancel " + cancelSize
+                    + " old crons, add " + addSize + " new crons");
         }
 
+    }
+
+    private void cancelJob(ArrayList<CronJobModel> cancelList) {
+        Iterator<CronJobModel> iterator = cancelList.iterator();
+        while (iterator.hasNext()) {
+            CronJobModel cron = iterator.next();
+            this.quartzManager.deleteJob(cron.getCronName());
+            Constant.LOG_CRON.debug("[cancelJob] cancel a Job , [" + cron + "]");
+        }
+    }
+
+    private void addJob(ArrayList<CronJobModel> addList) {
+        Iterator<CronJobModel> iterator = addList.iterator();
+        while (iterator.hasNext()) {
+            CronJobModel cron = iterator.next();
+            this.quartzManager.addNewJob(cron);
+            Constant.LOG_CRON.debug("[cancelJob] cancel a Job , [" + cron + "]");
+        }
+
+    }
+
+    private boolean isExecute(CronJobModel model) {
+        return ZooKeeperConfig.getInstance().isUseZK() ? this.isExecuteForZK(model)
+                : isExecuteSingle(model);
+    }
+
+    private boolean isExecuteForZK(CronJobModel model) {
+        if (null == model) {
+            return false;
+        } else {
+            int runType = model.getRunType(Constant.SERVER_IP);
+            return (runType != Constant.RunType.RUN_ON_NONE)
+                    && (runType != Constant.RunType.RUN_ON_OTHER || !model.getIsBlock());
+        }
+    }
+
+    private boolean isExecuteSingle(CronJobModel model) {
+        if (null == model) {
+            return false;
+        } else {
+            int runType = model.getRunType(Constant.SERVER_IP);
+            return runType == Constant.RunType.RUN_ON_ALL || model.getIsBlock()
+                    && model.getIsFirstIp() || !model.getIsBlock()
+                    && runType == Constant.RunType.RUN_ON_ANY;
+        }
     }
 
     private List<CronJobModel> loadFormDB() {
@@ -144,6 +215,12 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
             } catch (Exception e) {
                 Constant.LOG_CRON.error("[initZkConfig] error happen where new zookeeper:" + e);
             }
+        }
+    }
+
+    class InnerStartUpThread implements Runnable {
+        public void run() {
+            StartUpListener.this.refreshCron();
         }
     }
 }
