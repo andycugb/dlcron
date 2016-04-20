@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by jbcheng on 2016-03-19.
  */
+@Service
 public class StartUpListener implements ApplicationContextAware, ApplicationListener {
 
     @Autowired
@@ -62,7 +64,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
         }
     }
 
-    private synchronized void refreshCron() {
+    public synchronized void refreshCron() {
         Constant.LOG_CRON.info("[Refresh]start to refresh cron config");
         List<CronJobModel> dbCronList = this.loadFormDB();
         if (CollectionUtils.isNotEmpty(dbCronList)) {

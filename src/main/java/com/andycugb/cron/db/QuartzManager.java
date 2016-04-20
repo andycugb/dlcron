@@ -1,9 +1,9 @@
 package com.andycugb.cron.db;
 
 
+import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.CronDeployException;
 import com.andycugb.cron.StartUpCronTask;
-import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.ThreadPool;
 import org.quartz.JobKey;
@@ -26,6 +26,18 @@ public class QuartzManager {
     private Scheduler scheduler;
     private Map<String, CronJobModel> cronModel = new HashMap<String, CronJobModel>();
     private ClassGenerator classGenerator = ClassGenerator.getInstance();
+
+    private QuartzManager() {
+
+    }
+
+    static class QuartzManagerHolder {
+        private final static QuartzManager QUARTZ_MANAGER = new QuartzManager();
+    }
+
+    public static QuartzManager getInstance() {
+        return QuartzManagerHolder.QUARTZ_MANAGER;
+    }
 
     // init scheduler
     private void initScheduler() {
@@ -95,7 +107,7 @@ public class QuartzManager {
         }
         this.initScheduler();
         boolean success = false;
-        Class clazz = this.classGenerator.getClazz(cron.getCronName(), cron.getServiceName());
+        Class clazz = this.classGenerator.getClazz(cron);
         if (clazz != null) {
             JobDetailImpl job = new JobDetailImpl();
             job.setName(cron.getCronName());
