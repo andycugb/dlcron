@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(value = "/cron")
 public class InvokeController {
 
+    private final ClassGenerator generator = ClassGenerator.getInstance();
     @Autowired
     private StartUpListener startUpCron;
     @Autowired
     private QuartzManager quartzManager;
-    private final ClassGenerator generator = ClassGenerator.getInstance();
 
     @RequestMapping(value = "/refresh")
     public String refresh() {

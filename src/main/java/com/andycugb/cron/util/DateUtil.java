@@ -33,11 +33,12 @@ public class DateUtil {
         return new Timestamp(System.currentTimeMillis());
     }
 
-    public static String getTaskTimeBefore(int day){
-        Calendar calendar=Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH,-day);
+    public static String getTaskTimeBefore(int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -day);
         return new SimpleDateFormat("yyyyMMdd-HHmmss").format(calendar.getTime());
     }
+
     public static Timestamp toTimeStamp(Date date) {
         return new Timestamp(date.getTime());
     }

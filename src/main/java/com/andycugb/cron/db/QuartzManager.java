@@ -31,10 +31,6 @@ public class QuartzManager {
 
     }
 
-    static class QuartzManagerHolder {
-        private final static QuartzManager QUARTZ_MANAGER = new QuartzManager();
-    }
-
     public static QuartzManager getInstance() {
         return QuartzManagerHolder.QUARTZ_MANAGER;
     }
@@ -51,14 +47,13 @@ public class QuartzManager {
         }
     }
 
-
     public Map<String, CronJobModel> geAllCronModels() {
         return cronModel;
     }
 
     /**
      * reset scheduler cron jobs
-     * 
+     *
      * @param cronModel job map
      */
     public void reloadCronModels(Map<String, CronJobModel> cronModel) {
@@ -87,7 +82,7 @@ public class QuartzManager {
 
     /**
      * get cron job by name
-     * 
+     *
      * @param jobName cron job name
      * @return cron
      */
@@ -97,7 +92,7 @@ public class QuartzManager {
 
     /**
      * add new cron job to scheduler
-     * 
+     *
      * @param cron cron to be added
      * @return add status
      */
@@ -134,7 +129,7 @@ public class QuartzManager {
 
     /**
      * delete cron job by name
-     * 
+     *
      * @param jobName cron job name
      */
     public void deleteJob(String jobName) throws CronDeployException {
@@ -145,5 +140,9 @@ public class QuartzManager {
         } catch (SchedulerException e) {
             throw new CronDeployException(e);
         }
+    }
+
+    static class QuartzManagerHolder {
+        private final static QuartzManager QUARTZ_MANAGER = new QuartzManager();
     }
 }
