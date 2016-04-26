@@ -1,6 +1,6 @@
 package com.andycugb.cron;
 
-import com.andycugb.cron.db.CronJobModel;
+import com.andycugb.cron.model.CronJobModel;
 import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;

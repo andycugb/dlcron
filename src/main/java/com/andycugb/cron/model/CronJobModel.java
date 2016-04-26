@@ -1,4 +1,4 @@
-package com.andycugb.cron.db;
+package com.andycugb.cron.model;
 
 import com.andycugb.cron.CronModelException;
 import com.andycugb.cron.Inner;

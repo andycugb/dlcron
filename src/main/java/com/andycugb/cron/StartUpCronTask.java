@@ -1,6 +1,6 @@
 package com.andycugb.cron;
 
-import com.andycugb.cron.db.CronJobModel;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
 
 /**

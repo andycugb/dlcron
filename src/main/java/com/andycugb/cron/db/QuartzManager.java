@@ -4,6 +4,7 @@ package com.andycugb.cron.db;
 import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.CronDeployException;
 import com.andycugb.cron.StartUpCronTask;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.ThreadPool;
 import org.quartz.JobKey;

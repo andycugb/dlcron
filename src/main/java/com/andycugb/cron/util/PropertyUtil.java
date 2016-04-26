@@ -20,14 +20,14 @@ public class PropertyUtil {
             Constant.LOG_CRON.error(msg);
             throw new RuntimeException(msg);
         }
-        InputStream stream = loader.getResourceAsStream("cron.properties");
+        InputStream stream = loader.getResourceAsStream("src/main/env/test/cron.properties");
         Constant.LOG_CRON.debug("[initProp] init InputStream by cron.properties.");
         if (stream == null) {
-            stream = loader.getResourceAsStream("/cron.properties");
+            stream = loader.getResourceAsStream("/src/main/env/test/cron.properties");
             Constant.LOG_CRON.debug("[initProp] init InputStream by /cron.properties.");
         }
         if (stream == null) {
-            stream = loader.getResourceAsStream("com/andycugb/cron/cron.properties");
+            stream = loader.getResourceAsStream("src/main/env/test/cron.properties");
             Constant.LOG_CRON
                     .debug("[initProp] init InputStream by com/andycugb/cron/cron.properties.");
         }

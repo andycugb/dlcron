@@ -1,7 +1,7 @@
 package com.andycugb.cron;
 
 import com.andycugb.cron.db.CronJobDao;
-import com.andycugb.cron.db.CronJobModel;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.IpUtil;
