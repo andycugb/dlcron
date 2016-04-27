@@ -9,14 +9,14 @@ import java.util.Map;
 public interface CronTask {
 
     /**
-     * do schedule business logic
+     * do schedule business logic.
      * 
      * @param jobName invoke method
      * @param callType invoke type
      * @param runTime execute time
      * @param isUseDB whether use db config
-     * @return
+     * @return exec status map
      */
-    public Map<String, Object> doTask(String jobName, String callType, Timestamp runTime,
+    Map<String, Object> doTask(String jobName, String callType, Timestamp runTime,
             boolean isUseDB);
 }

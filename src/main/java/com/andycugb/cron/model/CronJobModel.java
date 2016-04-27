@@ -40,6 +40,10 @@ public class CronJobModel {
 
     }
 
+    /**
+     *  create instance of CronJobModel.
+     * @param cronModel init instance
+     */
     public CronJobModel(CronJobModel cronModel) {
         this.cronName = cronModel.getCronName();
         this.serviceName = cronModel.getServiceName();
@@ -153,7 +157,7 @@ public class CronJobModel {
     }
 
     /**
-     * set run type by given limit ips
+     * set run type by given limit ips.
      * 
      * @param serverIp local ip must be given
      * @return run type
@@ -186,10 +190,12 @@ public class CronJobModel {
                 }
             }
         }
-
         return runType;
     }
 
+    /**
+     * parse limit expression.
+     */
     public synchronized void parse() {
         if (!this.parsed.get()) {
             this.check();
@@ -219,7 +225,8 @@ public class CronJobModel {
 
                 String servicePath = services[i].substring(0, lIndex);
                 String[] strArray = servicePath.split(" ");
-                String rType, methodPath;
+                String rType;
+                String methodPath;
                 if (strArray.length == 1) {
                     rType = "void";
                     methodPath = strArray[0].trim();
@@ -247,7 +254,8 @@ public class CronJobModel {
                 String methodNameStr = methodPath.substring(pointIndex + 1);
                 String returnType = this.parseReturnType(rType);
 
-                String[] paramTypes, paramValues;
+                String[] paramTypes;
+                String[] paramValues;
                 if (lIndex + 1 < rIndex) {
                     String paramsStr = services[i].substring(lIndex + 1, rIndex);
                     String[] params = paramsStr.split(",");
@@ -336,13 +344,13 @@ public class CronJobModel {
         if (parameterTypes == null) {
             throw new CronModelException("Parameter types can not be null, " + this.toString());
         } else {
-            int l = parameterTypes.length;
-            if (l == 0) {
+            int length = parameterTypes.length;
+            if (length == 0) {
                 return new Class[0];
             } else {
-                Class[] clazz = new Class[l];
+                Class[] clazz = new Class[length];
 
-                for (int i = 0; i < l; ++i) {
+                for (int i = 0; i < length; ++i) {
                     String s0 = parameterTypes[i];
                     if ("boolean".equals(s0)) {
                         clazz[i] = Boolean.TYPE;

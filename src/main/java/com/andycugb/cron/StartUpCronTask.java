@@ -14,6 +14,9 @@ public class StartUpCronTask implements Runnable {
         this.cron = model;
     }
 
+    /**
+     * invoke given cron method.
+     */
     public void run() {
         try {
             long start = System.currentTimeMillis();

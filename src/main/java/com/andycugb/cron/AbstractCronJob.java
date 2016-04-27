@@ -1,8 +1,8 @@
 package com.andycugb.cron;
 
 import com.andycugb.cron.db.CronJobDao;
-import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.db.QuartzManager;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.DateUtil;
 import com.andycugb.cron.util.PropertyUtil;
@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,6 +33,11 @@ public abstract class AbstractCronJob implements Job, CronTask {
 
     public abstract String doJob();
 
+    /**
+     * implementation if job.
+     * @param context job exec context
+     * @throws JobExecutionException exec exception
+     */
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String jobName = ((JobDetailImpl) context.getJobDetail()).getName();
         Constant.LOG_CRON.info("[execute]Job[" + jobName + "]  begin to run, notify!");
@@ -41,7 +47,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
     }
 
     /**
-     * check and do scheduled task
+     * check and do scheduled task.
      * 
      * @param jobName service to do
      * @param callType execute type quartz or hand-set
@@ -61,8 +67,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
                         + "] is running, task is canceled for this time.";
             } else {
                 CronJobModel model = quartzManager.getJobByName(jobName);
-                int runType = model.getRunType(Constant.SERVER_IP);// if limitIps contains local
-                                                                   // ip,also
+                int runType = model.getRunType(Constant.SERVER_IP);// if limitIps contains local ip,also
                 // can exec
                 boolean singleCheck = false;// TODO:how to avoid repeat task exec????
                 boolean useZK = ZooKeeperConfig.getInstance().isUseZK();
@@ -72,18 +77,20 @@ public abstract class AbstractCronJob implements Job, CronTask {
                             result = this.doTask(jobName, callType, runTime, singleCheck);
                         } else {
                             if (runType == Constant.RunType.RUN_ON_ANY) {
+                                PropertyUtil property = new PropertyUtil("cron", Locale.CHINA);
                                 String prop =
-                                        PropertyUtil
-                                                .getStringProperty(Constant.CRON_SINGLE_CHECK);
+                                        property.getStringProperty(Constant.CRON_SINGLE_CHECK);
                                 if (Boolean.valueOf(prop)) {
                                     singleCheck = true;
                                 }
                                 result =
                                         this.doTaskWithZK(jobName, callType, runTime, singleCheck);
                                 if (result.get(Constant.RETURN_CODE) != null
-                                        && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.SUCCESS
-                                        && ((Integer) result.get(Constant.RETURN_CODE)) != Constant.CronJobStatus.ERROR) {
-                                    // make sure this job will trigger,in case of zk link failed
+                                        && ((Integer) result.get(Constant.RETURN_CODE))
+                                        != Constant.CronJobStatus.SUCCESS
+                                        && ((Integer) result.get(Constant.RETURN_CODE))
+                                        != Constant.CronJobStatus.ERROR) {
+                                    //make sure this job will trigger,in case of zk link failed
                                     result = this.doTask(jobName, callType, runTime, singleCheck);
                                 }
                             }
@@ -128,13 +135,13 @@ public abstract class AbstractCronJob implements Job, CronTask {
     }
 
     /**
-     * use zk lock to exec cron job,in this case,should retry to make sure trigger been done
+     * use zk lock to exec cron job,in this case,should retry to make sure trigger been done.
      * 
      * @param jobName job`s name
      * @param callType exec type
      * @param runTime exec time
      * @param isUseDB use db lock to avoid repeat trigger
-     * @return
+     * @return exec status map
      */
     public Map<String, Object> doTaskWithZK(String jobName, String callType, Timestamp runTime,
             boolean isUseDB) {
@@ -159,6 +166,14 @@ public abstract class AbstractCronJob implements Job, CronTask {
         return result;
     }
 
+    /**
+     *  invoke task without distribute lock.
+     * @param jobName invoke method
+     * @param callType invoke type
+     * @param runTime execute time
+     * @param isUseDB whether use db config
+     * @return exec status map
+     */
     public Map<String, Object> doTask(String jobName, String callType, Timestamp runTime,
             boolean isUseDB) {
         Map<String, Object> result = new HashMap<String, Object>(2);

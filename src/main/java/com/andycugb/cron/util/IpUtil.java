@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -21,10 +20,10 @@ public class IpUtil {
             .compile("^(10\\.|172\\.(1[6-9])|2[0-9]|3[01])\\.|192\\.168\\.");
 
     /**
-     * get local server ips
+     * get local server ips.
      * @param includeOuter true when include inner ip
      * @return server ip list
-     * @throws SocketException
+     * @throws SocketException socket exception
      */
     public static List<String> getServerIps(boolean includeOuter) throws SocketException {
         List<String> ipList = new ArrayList<String>();
@@ -50,14 +49,5 @@ public class IpUtil {
 
     private static boolean isInnerIp(String localIp) {
         return pattern.matcher(localIp).find();
-    }
-
-    public static void main(String[]args) throws Exception{
-        System.out.println(Arrays.toString(getServerIps(true).toArray()));
-        System.out.println("==========================");
-        System.out.println(Arrays.toString(getServerIps(false).toArray()));
-
-        String str="hello,.<>?/\\|]}[{';:-_)(*&^%$#@!~`";
-        System.out.println(str.replaceAll("\\pP|\\pS", ""));
     }
 }

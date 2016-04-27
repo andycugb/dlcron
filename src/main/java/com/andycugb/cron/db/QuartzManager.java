@@ -53,7 +53,7 @@ public class QuartzManager {
     }
 
     /**
-     * reset scheduler cron jobs
+     * reset scheduler cron jobs.
      *
      * @param cronModel job map
      */
@@ -67,7 +67,7 @@ public class QuartzManager {
     }
 
     /**
-     * start scheduler,if not start
+     * start scheduler,if not start.
      */
     public void startScheduler() {
         try {
@@ -82,7 +82,7 @@ public class QuartzManager {
     }
 
     /**
-     * get cron job by name
+     * get cron job by name.
      *
      * @param jobName cron job name
      * @return cron
@@ -92,7 +92,7 @@ public class QuartzManager {
     }
 
     /**
-     * add new cron job to scheduler
+     * add new cron job to scheduler.
      *
      * @param cron cron to be added
      * @return add status
@@ -129,7 +129,7 @@ public class QuartzManager {
     }
 
     /**
-     * delete cron job by name
+     * delete cron job by name.
      *
      * @param jobName cron job name
      */
@@ -144,6 +144,6 @@ public class QuartzManager {
     }
 
     static class QuartzManagerHolder {
-        private final static QuartzManager QUARTZ_MANAGER = new QuartzManager();
+        private static final QuartzManager QUARTZ_MANAGER = new QuartzManager();
     }
 }

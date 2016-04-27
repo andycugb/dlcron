@@ -1,8 +1,8 @@
 package com.andycugb.cron;
 
 import com.andycugb.cron.db.CronJobDao;
-import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.db.QuartzManager;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.IpUtil;
 import com.andycugb.cron.util.PropertyUtil;
@@ -17,14 +17,14 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.PostConstruct;
 
 /**
  * Created by jbcheng on 2016-03-19.
@@ -37,7 +37,11 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     @Autowired
     private CronJobDao cronJobDao;
     private AtomicBoolean isRun = new AtomicBoolean(true);
+    private PropertyUtil property = new PropertyUtil("cron", Locale.CHINA);
 
+    /**
+     * load resource before application start.
+     */
     @PostConstruct
     public void init() {
         Constant.LOG_CRON.info("[StartUp]Start to init cron...");
@@ -54,10 +58,18 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
         Constant.LOG_CRON.info("[StartUp]Finish to init cron...");
     }
 
+    /**
+     * set application context.
+     * @param applicationContext set param
+     */
     public void setApplicationContext(ApplicationContext applicationContext) {
         Constant.APP_CONTEXT = applicationContext;
     }
 
+    /**
+     * add method just after application start.
+     * @param applicationEvent application event
+     */
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
         if (isRun.getAndSet(false)) {
             Thread start = new Thread(new StartUpListener.InnerStartUpThread());
@@ -65,6 +77,9 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
         }
     }
 
+    /**
+     * refresh cron list.
+     */
     public synchronized void refreshCron() {
         Constant.LOG_CRON.info("[Refresh]start to refresh cron config");
         List<CronJobModel> dbCronList = this.loadFormDB();
@@ -122,7 +137,8 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
                 }
             }
             this.quartzManager.reloadCronModels(tempCronMap);
-            int cancelSize = cancelList.size(), addSize = addList.size();
+            int cancelSize = cancelList.size();
+            int addSize = addList.size();
             if (cancelSize > 0) {
                 this.cancelJob(cancelList);
             }
@@ -181,7 +197,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     }
 
     private List<CronJobModel> loadFormDB() {
-        return cronJobDao.getAllCronByGroup(PropertyUtil.getStringProperty("cron.group.name"));
+        return cronJobDao.getAllCronByGroup(property.getStringProperty("cron.group.name"));
     }
 
     private void initServerIp() {
@@ -204,10 +220,10 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
 
     private void initZkConfig() {
         ZooKeeperConfig zkConfig = ZooKeeperConfig.getInstance();
-        zkConfig.setConnectUrl(PropertyUtil.getStringProperty("cron.zookeeper.connect.url"));
-        zkConfig.setProduct(PropertyUtil.getStringProperty("cron.zookeeper.product.name"));
-        zkConfig.setRoot(PropertyUtil.getStringProperty("cron.zookeeper.root.name"));
-        zkConfig.setTimeout(PropertyUtil.getIntProperty("cron.zookeeper.connect.timeout", 3000));
+        zkConfig.setConnectUrl(property.getStringProperty("cron.zookeeper.connect.url"));
+        zkConfig.setProduct(property.getStringProperty("cron.zookeeper.product.name"));
+        zkConfig.setRoot(property.getStringProperty("cron.zookeeper.root.name"));
+        zkConfig.setTimeout(property.getIntProperty("cron.zookeeper.connect.timeout", 3000));
         Constant.LOG_CRON.debug("[initZkConfig] Set param. [connectUrl = "
                 + zkConfig.getConnectUrl() + "][product = " + zkConfig.getProduct() + "][root = "
                 + zkConfig.getRoot() + "][timeOut = " + zkConfig.getTimeout() + "].");

@@ -10,7 +10,7 @@ public class JobContainer {
             new ConcurrentHashMap<String, Boolean>();
 
     /**
-     * check whether the service is running
+     * check whether the service is running.
      * 
      * @param jobName service name
      * @return service running status
@@ -25,7 +25,7 @@ public class JobContainer {
     }
 
     /**
-     * when service done modify it`s status
+     * when service done modify it`s status.
      * 
      * @param jobName service name
      */

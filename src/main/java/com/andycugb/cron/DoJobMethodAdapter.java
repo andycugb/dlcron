@@ -86,9 +86,9 @@ public class DoJobMethodAdapter extends MethodVisitor implements Opcodes {
         this.visitVarInsn(25, 1);
         this.visitMethodInsn(182, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
         this.visitInsn(176);
-        int i = 2 + innerList.size() + maxVariableCount;
-        int j = 2 + innerList.size() + totalReturnCount;
-        this.visitMaxs(i, j);
+        int iCount = 2 + innerList.size() + maxVariableCount;
+        int jCount = 2 + innerList.size() + totalReturnCount;
+        this.visitMaxs(iCount, jCount);
     }
 
     private void addVariable(String type, String value) {
@@ -245,17 +245,17 @@ public class DoJobMethodAdapter extends MethodVisitor implements Opcodes {
     }
 
     private String getParameterValues(String[] parameterValues) {
-        StringBuilder s = new StringBuilder();
-        int i = 0;
+        StringBuilder builder = new StringBuilder();
+        int index = 0;
 
-        for (int n = parameterValues.length; i < n; ++i) {
-            s.append(parameterValues[i]);
-            if (i < n - 1) {
-                s.append(",");
+        for (int length = parameterValues.length; index < length; ++index) {
+            builder.append(parameterValues[index]);
+            if (index < length - 1) {
+                builder.append(",");
             }
         }
 
-        return s.toString();
+        return builder.toString();
     }
 
     private String getStringBuilderAppendType(String returnType) {

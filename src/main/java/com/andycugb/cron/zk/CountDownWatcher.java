@@ -21,6 +21,10 @@ public class CountDownWatcher implements Watcher {
         this.connectedLatch = connectedLatch;
     }
 
+    /**
+     * implementation of watcher.
+     * @param watchedEvent watch event
+     */
     public void process(WatchedEvent watchedEvent) {
         if (connectedLatch != null && watchedEvent.getState() == Event.KeeperState.SyncConnected) {
             this.connectedLatch.countDown();

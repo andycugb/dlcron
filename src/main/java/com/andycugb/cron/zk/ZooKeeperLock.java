@@ -38,6 +38,15 @@ public class ZooKeeperLock implements Watcher {
     private boolean isUseDB;
     private CronTask cronTask;
 
+    /**
+     * create instance by given parameter.
+     * @param rootPath root path
+     * @param jobName cron job name
+     * @param callType invoke type
+     * @param runTime exec time
+     * @param cronTask invoke method
+     * @param isUseDB whether use db
+     */
     public ZooKeeperLock(String rootPath, String jobName, String callType, Timestamp runTime,
             CronTask cronTask, boolean isUseDB) {
         this.path = rootPath;
@@ -82,11 +91,11 @@ public class ZooKeeperLock implements Watcher {
     /**
      * get the status of current logic thread 1、exit when already been done 2、could be continue when
      * next condition occurs 2。1：do not get lock,wait until been signal 2.2：continue execute real
-     * logic and modify status
+     * logic and modify status.
      * 
      * @return check status
-     * @throws InterruptedException
-     * @throws KeeperException
+     * @throws InterruptedException thread interrupted exception
+     * @throws KeeperException zookeeper exception
      */
     public Map<String, Object> checkStatus() throws InterruptedException, KeeperException {
         Map<String, Object> lockStatus = new HashMap<String, Object>(2);
@@ -176,9 +185,9 @@ public class ZooKeeperLock implements Watcher {
     }
 
     /**
-     * listen node delete and data change event
+     * listen node delete and data change event.
      * 
-     * @param event
+     * @param event watch event
      */
     public void process(WatchedEvent event) {
         if (event.getType() == Event.EventType.NodeDeleted) {

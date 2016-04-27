@@ -15,7 +15,7 @@ public class ZooKeeperSupport {
     private static volatile ZooKeeper zooKeeper = null;
 
     /**
-     * get zk client,create a new one when necessary
+     * get zk client,create a new one when necessary.
      * 
      * @return zk client
      */
@@ -41,10 +41,10 @@ public class ZooKeeperSupport {
 
     /**
      * create new zk client,when zk start,it will creates two async threads,we should wait until the
-     * real connect being ok
+     * real connect being ok.
      * 
      * @return zk client
-     * @throws Exception
+     * @throws Exception thread interrupted
      */
     public static ZooKeeper createNewZooKeeper() throws Exception {
         Constant.LOG_CRON.info("[createNewZooKeeper] create new zk instance start...");
@@ -62,7 +62,9 @@ public class ZooKeeperSupport {
             if (!ret) {
                 isUseZK = false;
                 Constant.LOG_CRON
-                        .error("[createNewZookeeper] Can\'t connect to ZK ,please check , now the system will run without ZK.");
+                        .error("[createNewZookeeper] Can\'t connect to ZK ,please check"
+                                +
+                                " , now the system will run without ZK.");
             }
         }
         Constant.LOG_CRON.info("[createNewZookeeper] create new instance finish.");

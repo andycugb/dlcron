@@ -16,6 +16,12 @@ public class DateUtil {
         return date == null ? "" : new SimpleDateFormat(TIME_FORMAT).format(date);
     }
 
+    /**
+     * get interval seconds of two given timestamp.
+     * @param first first timestamp
+     * @param second second timestamp
+     * @return interval seconds
+     */
     public static long getInterValSeconds(Timestamp first, Timestamp second) {
         if (first == null || second == null) {
             return 0L;
@@ -33,6 +39,11 @@ public class DateUtil {
         return new Timestamp(System.currentTimeMillis());
     }
 
+    /**
+     * get span day before current time.
+     * @param day day to be minus
+     * @return span day
+     */
     public static String getTaskTimeBefore(int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, -day);

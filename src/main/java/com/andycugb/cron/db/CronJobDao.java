@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,8 +14,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 /**
  * Created by jbcheng on 2016-03-17.
@@ -29,7 +28,7 @@ public class CronJobDao {
     }
 
     /**
-     * get crons by group
+     * get crons by group.
      * 
      * @param group group name
      * @return cron model list
@@ -45,12 +44,16 @@ public class CronJobDao {
             String sql;
             if (StringUtils.isBlank(group)) {
                 sql =
-                        "select ID,CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP, GROUP_NAME from tb_cron_ini  where GROUP_NAME is null or GROUP_NAME=\'\'";
+                        "select ID,CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP,"
+                                +
+                                " GROUP_NAME from tb_cron_ini  where GROUP_NAME is null or GROUP_NAME=\'\'";
                 Constant.LOG_CRON.debug("[getAllCron] select cron sql :" + sql);
                 pst = connection.prepareStatement(sql);
             } else {
                 sql =
-                        "select ID, CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP, GROUP_NAME from tb_cron_ini  where GROUP_NAME=? ";
+                        "select ID, CRON_NAME, SERVICE_NAME, CRON_EXPRESSION, LIMIT_IP, CRON_DESC, FIRE_ON_STARTUP,"
+                                +
+                                " GROUP_NAME from tb_cron_ini  where GROUP_NAME=? ";
                 pst = connection.prepareStatement(sql);
                 Constant.LOG_CRON.debug("[getAllCronByGroup] select cron sql :" + sql);
                 pst.setString(1, group);
@@ -101,7 +104,7 @@ public class CronJobDao {
     }
 
     /**
-     * get cron by name
+     * get cron by name.
      * 
      * @param conn datasource connection
      * @param cronName cron name
@@ -113,7 +116,9 @@ public class CronJobDao {
         CronJobModel model = null;
         try {
             pst =
-                    conn.prepareStatement("SELECT CRON_NAME,SERVICE_NAME,CRON_EXPRESSION,LIMIT_IP,CRON_DESC,ID,FIRE_ON_STARTUP,GROUP_NAME,LAST_RUN_TIME FROM TB_CRON_INI WHERE CRON_NAME=?");
+                    conn.prepareStatement("SELECT CRON_NAME,SERVICE_NAME,CRON_EXPRESSION,LIMIT_IP,"
+                            +
+                            "CRON_DESC,ID,FIRE_ON_STARTUP,GROUP_NAME,LAST_RUN_TIME FROM TB_CRON_INI WHERE CRON_NAME=?");
             pst.setString(1, cronName);
             rs = pst.executeQuery();
             if (rs.next()) {
@@ -145,7 +150,7 @@ public class CronJobDao {
     }
 
     /**
-     * update cron`s last run time
+     * update cron`s last run time.
      * 
      * @param conn datasource connection
      * @param jobName cron name

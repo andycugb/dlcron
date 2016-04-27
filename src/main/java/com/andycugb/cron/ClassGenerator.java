@@ -57,22 +57,22 @@ public class ClassGenerator implements Opcodes {
     }
 
     /**
-     * singleton instance
+     * singleton instance.
      * 
-     * @return
+     * @return instance of ClassGenerator
      */
     public static ClassGenerator getInstance() {
         return ClassHolder.INSTANCE;
     }
 
     /**
-     * invoke cron job
+     * invoke cron job.
      * 
      * @param cron cron to invoke
      * @param type call type
      * @param checkIp check ip
-     * @return
-     * @throws Exception
+     * @return exec status String
+     * @throws Exception exec exception
      */
     public static String executeJob(CronJobModel cron, String type, boolean checkIp)
             throws Exception {
@@ -86,10 +86,10 @@ public class ClassGenerator implements Opcodes {
     }
 
     /**
-     * get class by cron
+     * get class by cron.
      * 
-     * @param cron
-     * @return
+     * @param cron cron instance
+     * @return Class instance
      */
     public static Class<?> getClazz(CronJobModel cron) {
         Class clazz = null;

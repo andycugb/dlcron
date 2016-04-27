@@ -2,54 +2,44 @@ package com.andycugb.cron.util;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
  * Created by jbcheng on 2016-03-16.
  */
 public class PropertyUtil {
 
-    private static Properties properties = null;
+    private ResourceBundle bundle = null;
 
-    static {
-        ClassLoader loader = PropertyUtil.class.getClassLoader();
-        if (loader == null) {
-            String msg = "error when get class load";
-            Constant.LOG_CRON.error(msg);
-            throw new RuntimeException(msg);
+    /**
+     * create instance by given parameter.
+     * @param baseName resource file name
+     * @param locale language local
+     */
+    public PropertyUtil(String baseName, Locale locale) {
+        if (locale == null) {
+            locale = Locale.CHINA;
         }
-        InputStream stream = loader.getResourceAsStream("src/main/env/test/cron.properties");
-        Constant.LOG_CRON.debug("[initProp] init InputStream by cron.properties.");
-        if (stream == null) {
-            stream = loader.getResourceAsStream("/src/main/env/test/cron.properties");
-            Constant.LOG_CRON.debug("[initProp] init InputStream by /cron.properties.");
-        }
-        if (stream == null) {
-            stream = loader.getResourceAsStream("src/main/env/test/cron.properties");
-            Constant.LOG_CRON
-                    .debug("[initProp] init InputStream by com/andycugb/cron/cron.properties.");
-        }
-        if (stream != null) {
-            try {
-                properties.load(stream);
-            } catch (IOException e) {
-                Constant.LOG_CRON.error("[initProp] error when load resources");
-                throw new RuntimeException(e);
-            } finally {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    Constant.LOG_CRON.error("[initProp] error when close resources");
-                    throw new RuntimeException(e);
-                }
-            }
+        Constant.LOG_CRON.debug("[initProp] init InputStream by," + baseName);
+        try {
+            bundle = ResourceBundle.getBundle(baseName,locale);
+        } catch (NullPointerException e) {
+            Constant.LOG_CRON.error("[initProp] error when load resources:" + baseName + "," + e);
+        } catch (MissingResourceException e) {
+            Constant.LOG_CRON.error("[initProp] missing resources when load:" + baseName + ","
+                    + e);
         }
     }
 
-
-    public static String getStringProperty(String key, String def) {
+    /**
+     * get String value by given key,when failed,use def instead.
+      * @param key property key
+     * @param def default value
+     * @return  String value
+     */
+    public String getStringProperty(String key, String def) {
         String value = getStringProperty(key);
         if (StringUtils.isBlank(value)) {
             value = def;
@@ -57,15 +47,26 @@ public class PropertyUtil {
         return value;
     }
 
-    public static String getStringProperty(String key) {
-        String value = properties.getProperty(key);
+    /**
+     * get String value by given key.
+     * @param key property key
+     * @return String value
+     */
+    public String getStringProperty(String key) {
+        String value = bundle.getString(key);
         if (StringUtils.isBlank(value)) {
             Constant.LOG_CRON.warn("cannot find value by key:" + key);
         }
         return value;
     }
 
-    public static int getIntProperty(String key, int def) {
+    /**
+     * get int value by given key,when parse fail use def instead.
+     * @param key property key
+     * @param def default value
+     * @return int value
+     */
+    public int getIntProperty(String key, int def) {
         try {
             return getIntProperty(key);
         } catch (NumberFormatException e) {
@@ -74,8 +75,14 @@ public class PropertyUtil {
         return def;
     }
 
-    public static int getIntProperty(String key) throws NumberFormatException {
-        String value = properties.getProperty(key);
+    /**
+     * get int value by given key.
+     * @param key property key
+     * @return int value
+     * @throws NumberFormatException when int parse fail
+     */
+    public int getIntProperty(String key) throws NumberFormatException {
+        String value = bundle.getString(key);
         if (StringUtils.isNumeric(value)) {
             try {
                 return Integer.parseInt(value);

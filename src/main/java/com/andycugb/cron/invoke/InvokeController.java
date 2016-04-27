@@ -2,8 +2,8 @@ package com.andycugb.cron.invoke;
 
 import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.StartUpListener;
-import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.db.QuartzManager;
+import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,6 +23,10 @@ public class InvokeController {
     @Autowired
     private QuartzManager quartzManager;
 
+    /**
+     * refresh cron list.
+     * @return exec result
+     */
     @RequestMapping(value = "/refresh")
     public String refresh() {
         StringBuilder result = new StringBuilder();
@@ -39,6 +43,11 @@ public class InvokeController {
         return result.toString();
     }
 
+    /**
+     * exec cron by given name.
+     * @param cronName cron name
+     * @return exec result
+     */
     @RequestMapping(value = "/call/{cronName}")
     public String call(@PathVariable("cronName") String cronName) {
         StringBuilder result = new StringBuilder();
