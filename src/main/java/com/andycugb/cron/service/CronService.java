@@ -9,7 +9,7 @@ import java.util.List;
  * Created by jbcheng on 2016-04-27.
  */
 @Service(value = "cronService")
-public class CronService implements ICronService{
+public class CronService implements ICronService {
     /**
      * 查找所有任务.
      *
