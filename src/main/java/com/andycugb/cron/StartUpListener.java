@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,7 +36,6 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     @Autowired
     private CronJobDao cronJobDao;
     private AtomicBoolean isRun = new AtomicBoolean(true);
-    private PropertyUtil property = new PropertyUtil("cron", Locale.CHINA);
 
     /**
      * load resource before application start.
@@ -46,6 +44,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     public void init() {
         Constant.LOG_CRON.info("[StartUp]Start to init cron...");
         try {
+            Constant.LOG_CRON.info("[StartUp]initCronProperty ip is " + Constant.SERVER_IP);
             this.initServerIp();
             Constant.LOG_CRON.info("[StartUp]Server ip is " + Constant.SERVER_IP);
             this.initZkConfig();
@@ -197,7 +196,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
     }
 
     private List<CronJobModel> loadFormDB() {
-        return cronJobDao.getAllCronByGroup(property.getStringProperty("cron.group.name"));
+        return cronJobDao.getAllCronByGroup(PropertyUtil.getStringProperty("cron.group.name"));
     }
 
     private void initServerIp() {
@@ -220,10 +219,10 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
 
     private void initZkConfig() {
         ZooKeeperConfig zkConfig = ZooKeeperConfig.getInstance();
-        zkConfig.setConnectUrl(property.getStringProperty("cron.zookeeper.connect.url"));
-        zkConfig.setProduct(property.getStringProperty("cron.zookeeper.product.name"));
-        zkConfig.setRoot(property.getStringProperty("cron.zookeeper.root.name"));
-        zkConfig.setTimeout(property.getIntProperty("cron.zookeeper.connect.timeout", 3000));
+        zkConfig.setConnectUrl(PropertyUtil.getStringProperty("cron.zookeeper.connect.url"));
+        zkConfig.setProduct(PropertyUtil.getStringProperty("cron.zookeeper.product.name"));
+        zkConfig.setRoot(PropertyUtil.getStringProperty("cron.zookeeper.root.name"));
+        zkConfig.setTimeout(PropertyUtil.getIntProperty("cron.zookeeper.connect.timeout", 3000));
         Constant.LOG_CRON.debug("[initZkConfig] Set param. [connectUrl = "
                 + zkConfig.getConnectUrl() + "][product = " + zkConfig.getProduct() + "][root = "
                 + zkConfig.getRoot() + "][timeOut = " + zkConfig.getTimeout() + "].");

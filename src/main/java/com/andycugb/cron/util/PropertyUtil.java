@@ -2,44 +2,63 @@ package com.andycugb.cron.util;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Created by jbcheng on 2016-03-16.
  */
 public class PropertyUtil {
 
-    private ResourceBundle bundle = null;
+    private static Properties properties = null;
+    private static final String BASE_NAME = "cron.properties";
 
-    /**
-     * create instance by given parameter.
-     * @param baseName resource file name
-     * @param locale language local
-     */
-    public PropertyUtil(String baseName, Locale locale) {
-        if (locale == null) {
-            locale = Locale.CHINA;
-        }
-        Constant.LOG_CRON.debug("[initProp] init InputStream by," + baseName);
+    static {
+        InputStream stream = null;
+        String baseName = BASE_NAME;
         try {
-            bundle = ResourceBundle.getBundle(baseName,locale);
-        } catch (NullPointerException e) {
-            Constant.LOG_CRON.error("[initProp] error when load resources:" + baseName + "," + e);
-        } catch (MissingResourceException e) {
-            Constant.LOG_CRON.error("[initProp] missing resources when load:" + baseName + ","
-                    + e);
+            ClassLoader loader = PropertyUtil.class.getClassLoader();
+            Constant.LOG_CRON.debug("[initProp] init InputStream by resource:" + baseName);
+            stream = loader.getResourceAsStream(baseName);
+            if (stream == null) {
+                baseName = "/" + baseName;
+                Constant.LOG_CRON.debug("[initProp] init InputStream by resources:" + baseName);
+                stream = loader.getResourceAsStream(baseName);
+            }
+            if (stream == null) {
+                baseName = "com/andycugb/cron/" + baseName;
+                Constant.LOG_CRON.debug("[initProp] init InputStream by resources:" + baseName);
+                stream = loader.getResourceAsStream(baseName);
+            }
+            if (stream != null) {
+                try {
+                    properties.load(stream);
+                } catch (Exception e) {
+                    Constant.LOG_CRON.error("error when load resource:" + e);
+                }
+            }
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (Exception e) {
+                    Constant.LOG_CRON.error("error when close stream resource:" + e);
+                }
+            }
+            if (properties == null) {
+                throw new RuntimeException("[initPro] Can not find zk config resource");
+            }
         }
     }
 
     /**
      * get String value by given key.
+     * 
      * @param key property key
      * @return String value
      */
-    public String getStringProperty(String key) {
-        String value = bundle.getString(key);
+    public static String getStringProperty(String key) {
+        String value = properties.getProperty(key);
         if (StringUtils.isBlank(value)) {
             Constant.LOG_CRON.warn("cannot find value by key:" + key);
         }
@@ -48,11 +67,12 @@ public class PropertyUtil {
 
     /**
      * get int value by given key,when parse fail use def instead.
+     * 
      * @param key property key
      * @param def default value
      * @return int value
      */
-    public int getIntProperty(String key, int def) {
+    public static int getIntProperty(String key, int def) {
         try {
             return getIntProperty(key);
         } catch (NumberFormatException e) {
@@ -63,12 +83,13 @@ public class PropertyUtil {
 
     /**
      * get int value by given key.
+     * 
      * @param key property key
      * @return int value
      * @throws NumberFormatException when int parse fail
      */
-    public int getIntProperty(String key) throws NumberFormatException {
-        String value = bundle.getString(key);
+    public static int getIntProperty(String key) throws NumberFormatException {
+        String value = properties.getProperty(key);
         if (StringUtils.isNumeric(value)) {
             try {
                 return Integer.parseInt(value);
