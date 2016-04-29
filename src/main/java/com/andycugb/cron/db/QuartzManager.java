@@ -4,9 +4,7 @@ package com.andycugb.cron.db;
 import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.CronDeployException;
 import com.andycugb.cron.StartUpCronTask;
-import com.andycugb.cron.model.CronJobModel;
 import com.andycugb.cron.util.Constant;
-import com.andycugb.cron.util.ThreadPool;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -99,7 +97,7 @@ public class QuartzManager {
      */
     public boolean addNewJob(CronJobModel cron) {
         if (1 == cron.getFireOnStartUp()) {
-            ThreadPool.getInstance().exec(new StartUpCronTask(cron));
+            new Thread(new StartUpCronTask(cron)).start();
         }
         this.initScheduler();
         boolean success = false;

@@ -3,7 +3,7 @@ package com.andycugb.cron.invoke;
 import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.StartUpListener;
 import com.andycugb.cron.db.QuartzManager;
-import com.andycugb.cron.model.CronJobModel;
+import com.andycugb.cron.db.CronJobModel;
 import com.andycugb.cron.util.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

@@ -34,20 +34,6 @@ public class PropertyUtil {
     }
 
     /**
-     * get String value by given key,when failed,use def instead.
-      * @param key property key
-     * @param def default value
-     * @return  String value
-     */
-    public String getStringProperty(String key, String def) {
-        String value = getStringProperty(key);
-        if (StringUtils.isBlank(value)) {
-            value = def;
-        }
-        return value;
-    }
-
-    /**
      * get String value by given key.
      * @param key property key
      * @return String value

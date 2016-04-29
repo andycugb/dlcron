@@ -1,4 +1,4 @@
-package com.andycugb.cron.model;
+package com.andycugb.cron.db;
 
 import com.andycugb.cron.CronModelException;
 import com.andycugb.cron.Inner;
@@ -62,10 +62,6 @@ public class CronJobModel {
 
     public void setInnerList(List<Inner> innerList) {
         this.innerList = innerList;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public void setId(String id) {

@@ -2,7 +2,6 @@ package com.andycugb.cron.util;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -37,17 +36,6 @@ public class DateUtil {
 
     public static Timestamp getCurrentTimestamp() {
         return new Timestamp(System.currentTimeMillis());
-    }
-
-    /**
-     * get span day before current time.
-     * @param day day to be minus
-     * @return span day
-     */
-    public static String getTaskTimeBefore(int day) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, -day);
-        return new SimpleDateFormat("yyyyMMdd-HHmmss").format(calendar.getTime());
     }
 
     public static Timestamp toTimeStamp(Date date) {

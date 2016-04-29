@@ -14,9 +14,6 @@ public final class Constant {
     public static ApplicationContext APP_CONTEXT;
     public static String SERVER_IP;
 
-    public static final String CRON_DO_IP = "0.0.0.0";// 可以执行的ip
-    public static final String CRON_LIMIT_IP = "1.1.1.1";// 禁止执行的ip
-
     public static final class CronJobStatus {
         public static final int SUCCESS = 200;
         public static final int ERROR = 500;
