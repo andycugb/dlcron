@@ -3,6 +3,7 @@ package com.andycugb.cron.util;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Properties;
  */
 public class PropertyUtil {
 
-    private static Properties properties = null;
+    private static Properties properties = System.getProperties();
     private static final String BASE_NAME = "cron.properties";
 
     static {
@@ -99,6 +100,15 @@ public class PropertyUtil {
             }
         } else {
             throw new NumberFormatException("wrong number to parse:" + value);
+        }
+    }
+
+    public static void main(String[] args) {
+        Enumeration property = properties.propertyNames();
+        Object key;
+        while (property.hasMoreElements()) {
+            key = property.nextElement();
+            System.out.println("key:" + key + ",value:" + properties.get(key));
         }
     }
 }
