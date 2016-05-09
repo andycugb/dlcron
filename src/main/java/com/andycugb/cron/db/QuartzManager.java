@@ -1,16 +1,17 @@
 package com.andycugb.cron.db;
 
 
-import com.andycugb.cron.ClassGenerator;
 import com.andycugb.cron.CronDeployException;
 import com.andycugb.cron.StartUpCronTask;
 import com.andycugb.cron.util.Constant;
+import org.quartz.Job;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.triggers.CronTriggerImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.text.ParseException;
@@ -22,9 +23,10 @@ import java.util.Map;
  */
 @Repository
 public class QuartzManager {
+    @Autowired
+    private Job cronJob;
     private Scheduler scheduler;
     private Map<String, CronJobModel> cronModel = new HashMap<String, CronJobModel>();
-    private ClassGenerator classGenerator = ClassGenerator.getInstance();
 
     private QuartzManager() {
 
@@ -101,27 +103,22 @@ public class QuartzManager {
         }
         this.initScheduler();
         boolean success = false;
-        Class clazz = this.classGenerator.getClazz(cron);
-        if (clazz != null) {
-            JobDetailImpl job = new JobDetailImpl();
-            job.setName(cron.getCronName());
-            job.setJobClass(clazz);
+        JobDetailImpl job = new JobDetailImpl();
+        job.setName(cron.getCronName());
+        job.setJobClass(cronJob.getClass());
 
-            try {
-                CronTriggerImpl trigger = new CronTriggerImpl();
-                trigger.setName(cron.getCronName());
-                trigger.setCronExpression(cron.getCronExpression());
+        try {
+            CronTriggerImpl trigger = new CronTriggerImpl();
+            trigger.setName(cron.getCronName());
+            trigger.setCronExpression(cron.getCronExpression());
 
-                this.scheduler.scheduleJob(job, trigger);
-            } catch (ParseException e) {
-                Constant.LOG_CRON.error(
-                        "Fail to start cron system: Fail to deploying cron, cron="
-                                + cron.toString(), e);
-            } catch (SchedulerException e) {
-                Constant.LOG_CRON.error(
-                        "Fail to start cron system: Fail to deploying cron, cron="
-                                + cron.toString(), e);
-            }
+            this.scheduler.scheduleJob(job, trigger);
+        } catch (ParseException e) {
+            Constant.LOG_CRON.error("Fail to start cron system: Fail to deploying cron, cron="
+                    + cron.toString(), e);
+        } catch (SchedulerException e) {
+            Constant.LOG_CRON.error("Fail to start cron system: Fail to deploying cron, cron="
+                    + cron.toString(), e);
         }
         return success;
     }

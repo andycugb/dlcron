@@ -11,8 +11,8 @@ import java.util.Properties;
  */
 public class PropertyUtil {
 
-    private static Properties properties = System.getProperties();
     private static final String BASE_NAME = "cron.properties";
+    private static Properties properties = System.getProperties();
 
     static {
         InputStream stream = null;

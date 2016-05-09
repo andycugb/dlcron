@@ -17,6 +17,5 @@ public interface CronTask {
      * @param isUseDB whether use db config
      * @return exec status map
      */
-    Map<String, Object> doTask(String jobName, String callType, Timestamp runTime,
-            boolean isUseDB);
+    Map<String, Object> doTask(String jobName, String callType, Timestamp runTime, boolean isUseDB);
 }

@@ -61,10 +61,8 @@ public class ZooKeeperSupport {
                             TimeUnit.MICROSECONDS);
             if (!ret) {
                 isUseZK = false;
-                Constant.LOG_CRON
-                        .error("[createNewZookeeper] Can\'t connect to ZK ,please check"
-                                +
-                                " , now the system will run without ZK.");
+                Constant.LOG_CRON.error("[createNewZookeeper] Can\'t connect to ZK ,please check"
+                        + " , now the system will run without ZK.");
             }
         }
         Constant.LOG_CRON.info("[createNewZookeeper] create new instance finish.");

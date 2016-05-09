@@ -17,6 +17,7 @@ public class DateUtil {
 
     /**
      * get interval seconds of two given timestamp.
+     * 
      * @param first first timestamp
      * @param second second timestamp
      * @return interval seconds

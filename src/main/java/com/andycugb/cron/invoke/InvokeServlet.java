@@ -1,6 +1,6 @@
 package com.andycugb.cron.invoke;
 
-import com.andycugb.cron.ClassGenerator;
+import com.andycugb.cron.CronJobGenerator;
 import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.db.CronJobModel;
 import com.andycugb.cron.util.Constant;
@@ -17,7 +17,7 @@ import java.io.PrintWriter;
  */
 public class InvokeServlet extends HttpServlet {
     private QuartzManager quartzManager = QuartzManager.getInstance();
-    private ClassGenerator generator = ClassGenerator.getInstance();
+    private CronJobGenerator generator = CronJobGenerator.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

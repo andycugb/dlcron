@@ -5,12 +5,7 @@ import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.DateUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
 import java.sql.Timestamp;
@@ -40,6 +35,7 @@ public class ZooKeeperLock implements Watcher {
 
     /**
      * create instance by given parameter.
+     * 
      * @param rootPath root path
      * @param jobName cron job name
      * @param callType invoke type

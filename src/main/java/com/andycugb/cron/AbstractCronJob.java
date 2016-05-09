@@ -12,7 +12,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.impl.JobDetailImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,12 +24,18 @@ import java.util.Map;
  */
 public abstract class AbstractCronJob implements Job, CronTask {
 
-    @Autowired
     private CronJobDao cronJobJdbc;
-    @Autowired
     private QuartzManager quartzManager;
 
     public abstract String doJob();
+
+    public void setCronJobJdbc(CronJobDao cronJobJdbc) {
+        this.cronJobJdbc = cronJobJdbc;
+    }
+
+    public void setQuartzManager(QuartzManager quartzManager) {
+        this.quartzManager = quartzManager;
+    }
 
     /**
      * implementation if job.
@@ -55,7 +60,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
      * @param runTime execute time of service
      * @return desc of service
      */
-    public String checkWhenDoTask(String jobName, String callType, boolean hasLimitIp,
+    protected String checkWhenDoTask(String jobName, String callType, boolean hasLimitIp,
             Timestamp runTime) {
         Map<String, Object> result = new HashMap<String, Object>();
         try {
@@ -234,7 +239,7 @@ public abstract class AbstractCronJob implements Job, CronTask {
                 result.put(Constant.RETURN_DESC, "Exception occurs while doing service["
                         + jobName + "][" + callType + "][" + DateUtil.format(runTime) + "], " + e);
             }
-            return null;
+            return result;
         } finally {
             if (isUseDB) {
                 cronJobJdbc.updateLastRunTime(conn, jobName, runTime);

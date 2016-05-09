@@ -3,12 +3,8 @@ package com.andycugb.cron;
 /**
  * Created by jbcheng on 2016-04-08.
  */
-public interface Inner {
+public interface ExecMethodDesc {
     String getBeanId();
-
-    String getClassName();
-
-    String getMethodDesc();
 
     String getMethodName();
 

@@ -1,8 +1,8 @@
 package com.andycugb.cron;
 
 import com.andycugb.cron.db.CronJobDao;
-import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.db.CronJobModel;
+import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.util.Constant;
 import com.andycugb.cron.util.IpUtil;
 import com.andycugb.cron.util.PropertyUtil;
@@ -17,13 +17,10 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by jbcheng on 2016-03-19.
@@ -59,6 +56,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
 
     /**
      * set application context.
+     * 
      * @param applicationContext set param
      */
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -67,6 +65,7 @@ public class StartUpListener implements ApplicationContextAware, ApplicationList
 
     /**
      * add method just after application start.
+     * 
      * @param applicationEvent application event
      */
     public void onApplicationEvent(ApplicationEvent applicationEvent) {

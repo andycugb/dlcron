@@ -1,9 +1,9 @@
 package com.andycugb.cron.invoke;
 
-import com.andycugb.cron.ClassGenerator;
+import com.andycugb.cron.CronJobGenerator;
 import com.andycugb.cron.StartUpListener;
-import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.db.CronJobModel;
+import com.andycugb.cron.db.QuartzManager;
 import com.andycugb.cron.util.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(value = "/cron")
 public class InvokeController {
 
-    private final ClassGenerator generator = ClassGenerator.getInstance();
+    private final CronJobGenerator generator = CronJobGenerator.getInstance();
     @Autowired
     private StartUpListener startUpCron;
     @Autowired
@@ -25,6 +25,7 @@ public class InvokeController {
 
     /**
      * refresh cron list.
+     * 
      * @return exec result
      */
     @RequestMapping(value = "/refresh")
@@ -45,6 +46,7 @@ public class InvokeController {
 
     /**
      * exec cron by given name.
+     * 
      * @param cronName cron name
      * @return exec result
      */

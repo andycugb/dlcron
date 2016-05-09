@@ -20,7 +20,7 @@ public class StartUpCronTask implements Runnable {
     public void run() {
         try {
             long start = System.currentTimeMillis();
-            String result = ClassGenerator.getInstance().executeJob(this.cron, "start", true);
+            String result = CronJobGenerator.getInstance().executeJob(this.cron, "start", true);
             long end = System.currentTimeMillis();
             Constant.LOG_CRON.info("Success to fire Job[" + this.cron.getCronName()
                     + "] on startup, result={" + result + "}, cost_time=" + (end - start) + "ms");
